@@ -1,6 +1,1 @@
-
-
-
-"settings":[
-{"pAlignment":"center"}
-{"pAlignment":"right"}
+{"pAlignment": "right"}

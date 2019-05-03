@@ -1,13 +1,8 @@
 #! python
-
 import os
 import json
-import subprocess
-import tkinter
 from tkinter import *
 from tkinter import ttk, messagebox
-from subprocess import PIPE
-from tkinter.filedialog import askdirectory
 
 result_symbol = 'не задан'
 result_message = 'не задан'
@@ -66,8 +61,9 @@ def create_form():
     def update_parameters():
         global tmp_line, json_insert, json_settings
         listbox.delete(1.0, 5.0)
-        json_settings = {"columns": result_symbol, "paperWidth": result_message}
-        json_insert = json.dumps(json_settings, sort_keys=True, indent=4)
+        lines_dict = []
+        json_settings = {"columns": result_symbol, "paperWidth": result_message, "lines": lines_dict}
+        json_insert = json.dumps(json_settings, sort_keys=False, indent=4)
         listbox.insert(1.0, json_insert)
         tmp_line = listbox.get(1.0, END)
         create.destroy()
@@ -194,38 +190,34 @@ def settings_change():
         check_value12 = check_var12.get()
         check_value_list = (check_value1, check_value2, check_value3, check_value4, check_value5, check_value6,
                             check_value7, check_value8, check_value9, check_value10, check_value11, check_value12)
-        check_value_name = {1: '"pAlignment":"left"', 2: '{"pAlignment":"center"}', 3: '{"pAlignment":"right"}',
-                            4: '{"pCharSize":"std_size"}', 5: '{"pCharSize":"dbl_height"}',
-                            6: '{"pBarcodeW":1, "pBarcodeH":50, "pBarcodeHRI":"below" }', 7: '["aPrintBarcode", "code128"]',
-                            8: '["aCutPaper", "partial"]', 9: '["aSendRawData", "1D284C0600304520200101"]',
-                            10: '["aSendRawData", "1B2500"]', 11: '["aSendRawData", "1B2501"]',
-                            12: '["aSendRawData", "1B4A40"]'}
-        settings = open(setting_file, 'w')
-        settings.write('\n\n\n"settings":[\n')
-        settings.close()
-        place_dict = 1
+        check_value_name = ({"pAlignment": "left"}, {"pAlignment": "center"}, {"pAlignment": "right"},
+                            {"pCharSize": "std_size"}, {"pCharSize": "dbl_height"},
+                            {"pBarcodeW": 1, "pBarcodeH": 50, "pBarcodeHRI": "below"}, ["aPrintBarcode", "code128"],
+                            ["aCutPaper", "partial"], ["aSendRawData", "1D284C0600304520200101"],
+                            ["aSendRawData", "1B2500"], ["aSendRawData", "1B2501"], ["aSendRawData", "1B4A40"])
+        place_dict = -1
+        settings_parameter = []
         for choice in check_value_list:
             place_dict += 1
             if choice:
-                settings = open(setting_file, 'a')
-                settings.write(str(check_value_name.get(place_dict)) + '\n')
-                #json_dict = json.loads(json_insert)
-                #insert_check_value = dict(check_value_name.get(place_dict))
-                insert_check_dict = check_value_name.get(place_dict)
-                new_json = {}
-                new_json.update(json_settings)
-                new_json.update(eval(insert_check_dict))
-                last_json = json.dumps(new_json, sort_keys=True, indent=4)
-                listbox.insert(END, last_json)
-                create.destroy()
-                settings.close()
+                insert_check_dict = check_value_name[place_dict]
+                settings_parameter.append(insert_check_dict)
+        place_dict = 0
+        line_settings = {"settings": settings_parameter}
+        print(line_settings)
+        json_settings.update(line_settings)
+        new_json = json.dumps(json_settings, sort_keys=True, indent=4, ensure_ascii=False, skipkeys = True)
+        listbox.delete(1.0, END)
+        listbox.insert(1.0, new_json)
+        settings_window.destroy()
 
     settings_window = Toplevel()
     settings_window.title("Выбрать параметры шаблона")
     settings_window.geometry("700x250")
     check_var1 = BooleanVar()
     check_var1.set(0)
-    check1 = Checkbutton(settings_window, text="Выравнивание по левому краю", variable=check_var1, onvalue=1, offvalue=0)
+    check1 = Checkbutton(settings_window, text="Выравнивание по левому краю", variable=check_var1, onvalue=1,
+                         offvalue=0)
     check1.place(relx=0.1, rely=0.1, anchor=W)
     check_var2 = BooleanVar()
     check_var2.set(0)
@@ -233,7 +225,8 @@ def settings_change():
     check2.place(relx=0.1, rely=0.2, anchor=W)
     check_var3 = BooleanVar()
     check_var3.set(0)
-    check3 = Checkbutton(settings_window, text="Выравнивание по правому краю", variable=check_var3, onvalue=1, offvalue=0)
+    check3 = Checkbutton(settings_window, text="Выравнивание по правому краю", variable=check_var3, onvalue=1,
+                         offvalue=0)
     check3.place(relx=0.1, rely=0.3, anchor=W)
     check_var4 = BooleanVar()
     check_var4.set(0)
@@ -245,11 +238,13 @@ def settings_change():
     check5.place(relx=0.1, rely=0.5, anchor=W)
     check_var6 = BooleanVar()
     check_var6.set(0)
-    check6 = Checkbutton(settings_window, text='{"pBarcodeW":1, "pBarcodeH":50, "pBarcodeHRI":"below" }', variable=check_var6, onvalue=1, offvalue=0)
+    check6 = Checkbutton(settings_window, text='{"pBarcodeW":1, "pBarcodeH":50, "pBarcodeHRI":"below" }',
+                         variable=check_var6, onvalue=1, offvalue=0)
     check6.place(relx=0.1, rely=0.6, anchor=W)
     check_var7 = BooleanVar()
     check_var7.set(0)
-    check7 = Checkbutton(settings_window, text='["aPrintBarcode", "code128"]', variable=check_var7, onvalue=1, offvalue=0)
+    check7 = Checkbutton(settings_window, text='["aPrintBarcode", "code128"]', variable=check_var7, onvalue=1,
+                         offvalue=0)
     check7.place(relx=0.1, rely=0.7, anchor=W)
     check_var8 = BooleanVar()
     check_var8.set(0)
@@ -257,24 +252,26 @@ def settings_change():
     check8.place(relx=0.1, rely=0.8, anchor=W)
     check_var9 = BooleanVar()
     check_var9.set(0)
-    check9 = Checkbutton(settings_window, text='["aSendRawData", "1D284C0600304520200101"]', variable=check_var9, onvalue=1, offvalue=0)
+    check9 = Checkbutton(settings_window, text='["aSendRawData", "1D284C0600304520200101"]', variable=check_var9,
+                         onvalue=1, offvalue=0)
     check9.place(relx=0.1, rely=0.9, anchor=W)
     check_var10 = BooleanVar()
     check_var10.set(0)
-    check10 = Checkbutton(settings_window, text='["aSendRawData", "1B2500"]', variable=check_var10, onvalue=1, offvalue=0)
+    check10 = Checkbutton(settings_window, text='["aSendRawData", "1B2500"]', variable=check_var10, onvalue=1,
+                          offvalue=0)
     check10.place(relx=0.5, rely=0.1, anchor=W)
     check_var11 = BooleanVar()
     check_var11.set(0)
-    check11 = Checkbutton(settings_window, text='["aSendRawData", "1B2501"]', variable=check_var11, onvalue=1, offvalue=0)
+    check11 = Checkbutton(settings_window, text='["aSendRawData", "1B2501"]', variable=check_var11, onvalue=1,
+                          offvalue=0)
     check11.place(relx=0.5, rely=0.2, anchor=W)
     check_var12 = BooleanVar()
     check_var12.set(0)
-    check12 = Checkbutton(settings_window, text='["aSendRawData", "1B4A40"]', variable=check_var12, onvalue=1, offvalue=0)
+    check12 = Checkbutton(settings_window, text='["aSendRawData", "1B4A40"]', variable=check_var12, onvalue=1,
+                          offvalue=0)
     check12.place(relx=0.5, rely=0.3, anchor=W)
     apply_form = Button(settings_window, text="Apply", width=5, height=1, command=survey_of_choice, font='times 11')
     apply_form.place(relx=0.8, rely=0.9, anchor="c")
-
-
 
 
 root = Tk()
