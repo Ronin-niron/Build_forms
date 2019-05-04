@@ -59,7 +59,7 @@ def create_form():
             label_paper.config(bg='#e7f236')
 
     def update_parameters():
-        global tmp_line, json_insert, json_settings
+        global tmp_line, json_insert, json_settings, lines_dict
         listbox.delete(1.0, 5.0)
         lines_dict = []
         json_settings = {"columns": result_symbol, "paperWidth": result_message, "lines": lines_dict}
@@ -100,8 +100,8 @@ def create_form():
 
 def apply_global_text():
     listbox2.delete(0, END)
-    tmp_line = listbox.get(1.0, END)
-    for line in tmp_line.split("\n"):
+    temp_line = listbox.get(1.0, END)
+    for line in temp_line.split("\n"):
         listbox2.insert(END, line)
 
 
@@ -145,10 +145,10 @@ def doc_type():
                                            font='times 11', relief=GROOVE)
             type_change_glob_label.grid(column=1, row=1)
             type_change_glob_label.config(bg='#e7f236')
-            type_change_label = Label(doc_window, text="Тип документа " + str(value), width=25, height=1,
+            type_choice_label = Label(doc_window, text="Тип документа " + str(value), width=25, height=1,
                                       font='times 11', relief=GROOVE)
-            type_change_label.grid(column=3, row=1)
-            type_change_label.config(bg='#e7f236')
+            type_choice_label.grid(column=3, row=1)
+            type_choice_label.config(bg='#e7f236')
 
     print_list_doc_type()
     type_selection = IntVar()
@@ -157,8 +157,8 @@ def doc_type():
     doc_window.geometry("510x250")
     list_doc_type = Label(doc_window, text=line_doc_type, width=50, height=10, font=('times', 12))
     list_doc_type.place(relx=.2, rely=.2, anchor="n")
-    type_change = Button(doc_window, width=25, height=1, text='Установить тип документа', command=select_type)
-    type_change.grid(column=1, row=1)
+    type_choice = Button(doc_window, width=25, height=1, text='Установить тип документа', command=select_type)
+    type_choice.grid(column=1, row=1)
     type_entry = Entry(doc_window, textvariable=type_selection)
     type_entry.grid(column=2, row=1)
     type_change_label = Label(doc_window, text='Тип документа не выбран', width=25, height=1, font='times 11',
@@ -202,11 +202,9 @@ def settings_change():
             if choice:
                 insert_check_dict = check_value_name[place_dict]
                 settings_parameter.append(insert_check_dict)
-        place_dict = 0
         line_settings = {"settings": settings_parameter}
-        print(line_settings)
         json_settings.update(line_settings)
-        new_json = json.dumps(json_settings, sort_keys=True, indent=4, ensure_ascii=False, skipkeys = True)
+        new_json = json.dumps(json_settings, sort_keys=False, indent=4, ensure_ascii=False, skipkeys=True)
         listbox.delete(1.0, END)
         listbox.insert(1.0, new_json)
         settings_window.destroy()
@@ -274,9 +272,109 @@ def settings_change():
     apply_form.place(relx=0.8, rely=0.9, anchor="c")
 
 
+def add_string():
+    list_option_select = []
+
+    def add():
+        real_list.clear()
+        select = standard_option_select.get()
+        list_option_select.append(select)
+        listbox_option_select.delete(0, END)
+        for item in list_option_select:
+            listbox_option_select.insert(0, item)
+            real_list.append(item)
+
+    def add_entry():
+        real_list.clear()
+        select = nonstandard_option_selection.get()
+        list_option_select.append(select)
+        listbox_option_select.delete(0, END)
+        for item in list_option_select:
+            listbox_option_select.insert(0, item)
+            real_list.append(item)
+
+    def del_select():
+        global real_list
+        select = list(listbox_option_select.curselection())
+        select.reverse()
+        for i in select:
+            listbox_option_select.delete(i)
+            del list_option_select[i]
+        real_list = list(listbox_option_select.get(0, END))
+
+    def clear_list():
+        listbox_option_select.delete(0, END)
+        list_option_select.clear()
+
+    def move_up():
+        idxs = listbox_option_select.curselection()
+        if not idxs:
+            return
+        for pos in idxs:
+            if pos == 0:
+                continue
+            text = listbox_option_select.get(pos)
+            listbox_option_select.delete(pos)
+            listbox_option_select.insert(pos-1, text)
+
+    def move_down():
+        idxs = listbox_option_select.curselection()
+        if not idxs:
+            return
+        for pos in idxs:
+            text = listbox_option_select.get(pos)
+            listbox_option_select.delete(pos)
+            listbox_option_select.insert(pos+1, text)
+
+    list_options_menu = {0: "> None <", 1: "one", 2: "two", 3: "three", 4: "four"}
+    real_list = []
+    fmt_parameter = []
+    nonstandard_option_selection = StringVar()
+    string_window = Toplevel()
+    string_window.title("Добавление строки в шаблон")
+    string_window.geometry("800x450")
+    string_window.config(bg='#E6E6FA')
+    standard_option_select = StringVar(string_window)
+    standard_option_select.set(list_options_menu.get(0))
+    temp_string = {"var": standard_option_select.get, "fmt": fmt_parameter}
+    label_menu = Label(string_window, text='Стандартные :', height=1, width=15, font='times 11', relief=GROOVE)
+    label_menu.grid(column=1, row=1)
+    label_menu.config(bg='#e7f236')
+    option_menu = OptionMenu(string_window, standard_option_select, *list_options_menu.values())
+    option_menu.grid(column=2, row=1)
+    option_menu.config(width=12, height=1)
+    button_menu = Button(string_window, width=10, height=1, text="Добавить", command=add)
+    button_menu.grid(column=3, row=1)
+    label_entry = Label(string_window, text='Не стандартные :', height=1, width=15, font='times 11', relief=GROOVE)
+    label_entry.grid(column=1, row=2)
+    label_entry.config(bg='#e7f236')
+    option_entry = Entry(string_window, textvariable=nonstandard_option_selection)
+    option_entry.grid(column=2, row=2)
+    option_entry.config(width=20)
+    button_entry = Button(string_window, width=10, height=1, text="Добавить", command=add_entry)
+    button_entry.grid(column=3, row=2)
+    listbox_option_select = Listbox(string_window, width=30, height=15, font=('times', 12), selectbackground='BLUE')
+    listbox_option_select.place(x=350, y=30)
+    label_option_select = Label(string_window, text='Список выбранных параметров', height=1, width=25, font='times 11',
+                                relief=RIDGE)
+    label_option_select.place(x=370, y=5)
+    label_option_select.config(bg='#7FFFD4')
+    del_element_button = Button(string_window, width=15, height=1, text="Удалить элемент", command=del_select)
+    del_element_button.place(x=350, y=350)
+    clear_button = Button(string_window, width=15, height=1, text="Очистить список", command=clear_list)
+    clear_button.place(x=480, y=350)
+    move_up__button = Button(string_window, width=3, height=1, text="▲", command=move_up)
+    move_up__button.place(x=595, y=140)
+    move_down__button = Button(string_window, width=3, height=1, text="▼", command=move_down)
+    move_down__button.place(x=595, y=175)
+
+    mainloop()
+
+
 root = Tk()
 root.title("Build Form")
 root.wm_geometry("%dx%d+%d+%d" % (1200, 600, 0, 0))
+root.config(bg='#E6E6FA')
 frame = ttk.Frame(root, padding=(7, 7, 11, 11))
 frame.grid(column=0, row=0, sticky=(N, S, E, W))
 type_change = Label(frame, text='Тип документа не выбран', width=25, font='times 11', relief=GROOVE)
@@ -288,7 +386,7 @@ btn_info_label = ttk.Button(frame, text="Добавить Settings", command=ins
 btn_info_label.grid(column=3, row=1)
 btn_develop = ttk.Button(frame, text="Тип документа", command=doc_type)
 btn_develop.grid(column=4, row=1)
-btn_trade = ttk.Button(frame, text="Кнопка 4")
+btn_trade = ttk.Button(frame, text="Добавить строку", command=add_string)
 btn_trade.grid(column=5, row=1)
 btn_master = ttk.Button(frame, text='Выбор настроек', command=settings_change)
 btn_master.grid(column=6, row=1)
