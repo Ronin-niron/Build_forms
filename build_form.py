@@ -1,6 +1,6 @@
 #! python
-import os
 import json
+import os
 from tkinter import *
 from tkinter import ttk, messagebox
 
@@ -10,7 +10,6 @@ type_selection = 'не задан'
 
 setting_file = (os.getcwd() + '/Settings.txt')
 doctype_list = {'1': '-чек продажи', '2': '-чек возврата', '3': '-чек анулирования', '4': '-новый'}
-
 
 def select_close():
     try:
@@ -38,7 +37,7 @@ def create_form():
                                  font='times 11', relief=GROOVE)
             label_symbol.grid(column=3, row=2)
             label_symbol.config(bg='#e7f236')
-            label_symbol_glob = Label(frame, text="Кол-во знаков " + str(mess_symbol.get()), width=25, height=1,
+            label_symbol_glob = Label(frame, text="Кол-во знаков " + str(mess_symbol.get()), width=23, height=1,
                                       font='times 11', relief=GROOVE)
             label_symbol_glob.grid(column=11, row=1)
             label_symbol_glob.config(bg='#e7f236')
@@ -49,7 +48,7 @@ def create_form():
         if int(result_message) == 0 or int(result_message) > 80:
             messagebox.showwarning('Error', 'Ширина бумаги не должна быть 0 или больше 80')
         else:
-            label_paper_width = Label(frame, text="Ширина бумаги " + str(message.get()), width=25, height=1,
+            label_paper_width = Label(frame, text="Ширина бумаги " + str(message.get()), width=23, height=1,
                                       font='times 11', relief=GROOVE)
             label_paper_width.grid(column=10, row=1)
             label_paper_width.config(bg='#e7f236')
@@ -274,6 +273,102 @@ def settings_change():
 
 def add_string():
     list_option_select = []
+    list_fmt_d = ('#002', '#003', '#004', '#005', '#021', '#022')
+    list_fmt_u = '#001'
+    list_fmt_s = '#020'
+    list_fmt_f = ('#030', '#031', '#032', '#033', '#034', '#035')
+    list_fmt_struct_tm = ('#025', '#026', '#027', '#028', '#029')
+    fmt_parameter = []
+
+    list_options_menu = {0: "Серийный номер КСА (БУ)", 1: "Регистрационный номер КСА в СККО", 2: "УНП владельца",
+                         3: "Порядковый номер текущей регистрации КСА", 4: "Количество перерегистраций в БЭП",
+                         5: "Уникальный идентификатор документа (СКНО)", 6: "Номер отчёта по данным из БЭП",
+                         7: "Номер смены (для X-отчёта, Z-отчёта)", 8: "Текущее локальное время БУ (RTC)",
+                         9: "Дата/время открытия текущей смены (для X-отчёта)",
+                         10: "Дата/время открытия последней смены (для Z-отчёта)",
+                         11: "Дата/время закрытия последней смены (для Z-отчёта)",
+                         12: "Дата/время регистрации последнего документа", 13: "Итог по документу",
+                         14: "Пред-итог по документу", 15: "Скидка (надбавка) на пред-итог",
+                         16: "Суммарная скидка (надбавка) по позициям", 17: "Общая скидка (надбавка) по документу",
+                         18: "Скидка (надбавка) на позицию в чеке продажи/возврата"}
+
+    code_options = {"Серийный номер КСА (БУ)": "#001", "Регистрационный номер КСА в СККО": "#002",
+                    "УНП владельца": "#003", "Порядковый номер текущей регистрации КСА": "#004",
+                    "Количество перерегистраций в БЭП": "#005", "Уникальный идентификатор документа (СКНО)": "#020",
+                    "Номер отчёта по данным из БЭП": "#021", "Номер смены (для X-отчёта, Z-отчёта)": "#022",
+                    "Текущее локальное время БУ (RTC)": "#025",
+                    "Дата/время открытия текущей смены (для X-отчёта)": "#026",
+                    "Дата/время открытия последней смены (для Z-отчёта)": "#027",
+                    "Дата/время закрытия последней смены (для Z-отчёта)": "#028",
+                    "Дата/время регистрации последнего документа": "#029", "Итог по документу": "#030",
+                    "Пред-итог по документу": "#031", "Скидка (надбавка) на пред-итог": "#032",
+                    "Суммарная скидка (надбавка) по позициям": "#033", "Общая скидка (надбавка) по документу": "#034",
+                    "Скидка (надбавка) на позицию в чеке продажи/возврата": "#035"}
+
+    def apply_string():
+        global temp_string, json_insert, fmt_parameter
+        number_in_listbox = listbox_option_select.size()
+        if number_in_listbox == 1:
+            for line in listbox_option_select.get(0, END):
+                code_line = code_options.get(line)
+                temp_string = {"var": code_line, "fmt": fmt_parameter}
+        elif number_in_listbox > 1:
+            code_line = []
+            for line in listbox_option_select.get(0, END):
+                code_line.append(code_options.get(line))
+                temp_string = {"var": code_line, "fmt": fmt_parameter}
+        text = listbox.get(1.0, END)
+        text_dict = []
+        text_dict = eval(text)
+        value_lines = text_dict.get("lines")
+        if len(value_lines) != 0:
+            if temp_string in value_lines:
+                lines_dict.append(value_lines)
+            else:
+                lines_dict.append(temp_string)
+        else:
+            lines_dict.append(temp_string)
+        text_dict.update({"lines": lines_dict})
+        json_insert = json.dumps(text_dict, sort_keys=False, indent=4)
+        listbox.delete(0.0, END)
+        listbox.insert(1.0, json_insert)
+        string_window.destroy()
+
+    def date_time_checkbox():
+        label_date = Label(string_window, text="Date Parameter", height=1, width=14, font='times 10', relief=GROOVE)
+        label_date.place(x=600, y=10)
+        label_date.config(bg='#7FFFD4')
+        check_var_date = IntVar(value=0)
+        check_var_date.set(0)
+        check1 = Radiobutton(string_window, text="dd/mm/yyyy", variable=check_var_date, value=0)
+        check1.place(x=600, y=40)
+        check2 = Radiobutton(string_window, text="yyyy/mm/dd", variable=check_var_date, value=1)
+        check2.place(x=600, y=60)
+        check3 = Radiobutton(string_window, text="dd.mm.yyyy", variable=check_var_date, value=2)
+        check3.place(x=600, y=80)
+        check4 = Radiobutton(string_window, text="yyyy.mm.dd", variable=check_var_date, value=3)
+        check4.place(x=600, y=100)
+        check5 = Radiobutton(string_window, text="dd.mm.yy", variable=check_var_date, value=4)
+        check5.place(x=600, y=120)
+        check6 = Radiobutton(string_window, text="yy.mm.dd", variable=check_var_date, value=5)
+        check6.place(x=600, y=140)
+        label_time = Label(string_window, text="Time Parameter", height=1, width=14, font='times 10', relief=GROOVE)
+        label_time.place(x=600, y=180)
+        label_time.config(bg='#7FFFD4')
+        check_var_time = IntVar(value=0)
+        check_var_time.set(0)
+        check7 = Radiobutton(string_window, text="HH/MM/SS", variable=check_var_time, value=0)
+        check7.place(x=600, y=200)
+        check8 = Radiobutton(string_window, text="HH-MM-SS", variable=check_var_time, value=1)
+        check8.place(x=600, y=220)
+        check9 = Radiobutton(string_window, text="HH:MM:SS", variable=check_var_time, value=2)
+        check9.place(x=600, y=240)
+        check10 = Radiobutton(string_window, text="HH/MM", variable=check_var_time, value=3)
+        check10.place(x=600, y=260)
+        check11 = Radiobutton(string_window, text="HH-MM", variable=check_var_time, value=4)
+        check11.place(x=600, y=280)
+        check12 = Radiobutton(string_window, text="HH:MM", variable=check_var_time, value=5)
+        check12.place(x=600, y=300)
 
     def add():
         real_list.clear()
@@ -281,8 +376,31 @@ def add_string():
         list_option_select.append(select)
         listbox_option_select.delete(0, END)
         for item in list_option_select:
-            listbox_option_select.insert(0, item)
+            listbox_option_select.insert(END, item)
             real_list.append(item)
+        if code_options.get(select) in list_fmt_d:
+            if len(fmt_parameter) != 0:
+                fmt_parameter.append('%d')
+            else:
+                fmt_parameter = '%d'
+        elif code_options.get(select) in list_fmt_u:
+            if len(fmt_parameter) != 0:
+                fmt_parameter.append('%u')
+            else:
+                fmt_parameter = '%u'
+        elif code_options.get(select) in list_fmt_s:
+            if len(fmt_parameter) != 0:
+                fmt_parameter.append('%s')
+            else:
+                fmt_parameter = '%s'
+        elif code_options.get(select) in list_fmt_f:
+            if len(fmt_parameter) != 0:
+                fmt_parameter.append('%f')
+            else:
+                fmt_parameter = '%f'
+        elif code_options.get(select) in list_fmt_struct_tm:
+            date_time_checkbox()
+            fmt_parameter = ''
 
     def add_entry():
         real_list.clear()
@@ -290,7 +408,7 @@ def add_string():
         list_option_select.append(select)
         listbox_option_select.delete(0, END)
         for item in list_option_select:
-            listbox_option_select.insert(0, item)
+            listbox_option_select.insert(END, item)
             real_list.append(item)
 
     def del_select():
@@ -326,23 +444,25 @@ def add_string():
             listbox_option_select.delete(pos)
             listbox_option_select.insert(pos+1, text)
 
-    list_options_menu = {0: "> None <", 1: "one", 2: "two", 3: "three", 4: "four"}
+
+
+
+
     real_list = []
     fmt_parameter = []
     nonstandard_option_selection = StringVar()
     string_window = Toplevel()
     string_window.title("Добавление строки в шаблон")
-    string_window.geometry("800x450")
+    string_window.geometry("850x550")
     string_window.config(bg='#E6E6FA')
     standard_option_select = StringVar(string_window)
     standard_option_select.set(list_options_menu.get(0))
-    temp_string = {"var": standard_option_select.get, "fmt": fmt_parameter}
     label_menu = Label(string_window, text='Стандартные :', height=1, width=15, font='times 11', relief=GROOVE)
     label_menu.grid(column=1, row=1)
     label_menu.config(bg='#e7f236')
     option_menu = OptionMenu(string_window, standard_option_select, *list_options_menu.values())
     option_menu.grid(column=2, row=1)
-    option_menu.config(width=12, height=1)
+    option_menu.config(width=50, height=1)
     button_menu = Button(string_window, width=10, height=1, text="Добавить", command=add)
     button_menu.grid(column=3, row=1)
     label_entry = Label(string_window, text='Не стандартные :', height=1, width=15, font='times 11', relief=GROOVE)
@@ -350,23 +470,25 @@ def add_string():
     label_entry.config(bg='#e7f236')
     option_entry = Entry(string_window, textvariable=nonstandard_option_selection)
     option_entry.grid(column=2, row=2)
-    option_entry.config(width=20)
+    option_entry.config(width=55)
     button_entry = Button(string_window, width=10, height=1, text="Добавить", command=add_entry)
     button_entry.grid(column=3, row=2)
-    listbox_option_select = Listbox(string_window, width=30, height=15, font=('times', 12), selectbackground='BLUE')
-    listbox_option_select.place(x=350, y=30)
+    listbox_option_select = Listbox(string_window, width=55, height=15, font=('times', 12), selectbackground='BLUE')
+    listbox_option_select.place(x=50, y=100)
     label_option_select = Label(string_window, text='Список выбранных параметров', height=1, width=25, font='times 11',
                                 relief=RIDGE)
-    label_option_select.place(x=370, y=5)
+    label_option_select.place(x=165, y=75)
     label_option_select.config(bg='#7FFFD4')
     del_element_button = Button(string_window, width=15, height=1, text="Удалить элемент", command=del_select)
-    del_element_button.place(x=350, y=350)
+    del_element_button.place(x=135, y=410)
     clear_button = Button(string_window, width=15, height=1, text="Очистить список", command=clear_list)
-    clear_button.place(x=480, y=350)
+    clear_button.place(x=275, y=410)
     move_up__button = Button(string_window, width=3, height=1, text="▲", command=move_up)
-    move_up__button.place(x=595, y=140)
+    move_up__button.place(x=505, y=195)
     move_down__button = Button(string_window, width=3, height=1, text="▼", command=move_down)
-    move_down__button.place(x=595, y=175)
+    move_down__button.place(x=505, y=230)
+    apply_form = Button(string_window, text="Apply", width=5, height=1, command=apply_string, font='times 11')
+    apply_form.place(relx=0.8, rely=0.9, anchor="c")
 
     mainloop()
 
