@@ -8,9 +8,10 @@ import socket
 result_symbol = 'не задан'
 result_message = 'не задан'
 type_selection = 'не задан'
-fmt_parameter = []
 new_form = ''
 ip_entry_socket = ''
+code_line = []
+fmt_parameter = []
 
 setting_file = (os.getcwd() + '/Settings.txt')
 doctype_list = {'1': '-чек продажи', '2': '-чек возврата', '3': '-чек анулирования', '4': '-новый'}
@@ -116,16 +117,24 @@ def apply_global_text():
         data = port.recv(10000).decode()
         data_dict = eval(data)
         finish = data_dict.get('data')
-        finish_view = finish.get('docText')
-        print(data)
-        port.close()
+        if finish is None:
+            port.close()
+            listbox2.delete(0, END)
+            errcode = data_dict.get('errCode')
+            errmsg = data_dict.get('errMsg')
+            finish_view = [str(data_dict), 'errCode = ' + str(errcode), 'errMsg = ' + str(errmsg)]
+            for line in finish_view:
+                listbox2.insert(END, line)
+        else:
+            finish_view = finish.get('docText')
+            listbox2.delete(0, END)
+            for line in finish_view:
+                listbox2.insert(END, line)
+            port.close()
     except Exception as er:
         messagebox.showwarning('Error', 'Ошибка при подключении \n\n%s' % er)
     finally:
         port.close()
-    listbox2.delete(0, END)
-    for line in finish_view:
-        listbox2.insert(END, line)
 
 
 def settings_change():
@@ -233,18 +242,13 @@ def settings_change():
 
 
 def add_string():
-    global fmt_parameter, var_list, var_line, fmt_list, list_no_standard_type
+    global tmp_fmt_parameter, var_list, var_line, fmt_list, list_no_standard_type
     var_line = ''
     var_list = []
     fmt_list = []
-    fmt_parameter = []
+    tmp_fmt_parameter = []
     list_option_select = []
     list_no_standard_type = []
-    list_fmt_d = ('#002', '#003', '#004', '#005', '#021', '#022')
-    list_fmt_u = '#001'
-    list_fmt_s = '#020'
-    list_fmt_f = ('#030', '#031', '#032', '#033', '#034', '#035')
-    list_fmt_struct_tm = ('#025', '#026', '#027', '#028', '#029')
     list_type_menu = {0: "Тип не установлен", 1: "Сумма денежных средств", 2: "Количество товара", 3: "Дата/время", 4: "Дата"}
     code_type_menu = {"Тип не установлен": "%ls", "Сумма денежных средств": "t_curr", "Количество товара": "t_qty",
                       "Дата/время": "t_datetime", "Дата": "t_date"}
@@ -274,184 +278,183 @@ def add_string():
                     "Суммарная скидка (надбавка) по позициям": "#033", "Общая скидка (надбавка) по документу": "#034",
                     "Скидка (надбавка) на позицию в чеке продажи/возврата": "#035"}
 
-    def apply_string():
-        global temp_string, json_insert, fmt_parameter, var_line, var_list, fmt_list, list_no_standard_type
-        number_in_listbox = listbox_option_select.size()
-        code_line = ''
-        flag = 0
-        list_listbox_option_select = listbox_option_select.get(0, END)
-        if len(fmt_parameter) == 1:
-            fmt_parameter = "".join(str(item) for item in fmt_parameter)
-        if number_in_listbox == 1:
-            for line in list_listbox_option_select:
-                if line in code_options:
-                    code_line = code_options.get(line)
-                    temp_string = {"var": code_line, "fmt": fmt_parameter}
-                else:
-                    code_line = var_line
-                    temp_string = {"var": code_line, "fmt": fmt_parameter}
-        elif number_in_listbox > 1:
-            code_line = []
-            for line in list_listbox_option_select:
-                if line in code_options:
-                    code_line.append(code_options.get(line))
-                    temp_string = {"var": code_line, "fmt": fmt_parameter}
-                else:
-                    #if len(list_listbox_option_select) == 1:
-                    #    code_line.append(var_line)
-                    #else:
-                    #    if code_line != var_list:
-                    #        code_line.extend(var_list)
-                    add_entry_type = list_no_standard_type[flag]
-                    code_line.append(add_entry_type)
-                    flag += 1
-                    temp_string = {"var": code_line, "fmt": fmt_parameter}
+    def new_apply_string():
+        global temp_string, fmt_parameter, code_line
+        temp_string = {"var": code_line, "fmt": fmt_parameter}
         text = listbox.get(1.0, END)
         text_dict = []
         text_dict = eval(text)
         value_lines = text_dict.get("lines")
-        if len(value_lines) != 0:
-            if temp_string not in value_lines:
-                value_lines.append(temp_string)
-            elif temp_string in value_lines:
-                messagebox.showwarning('Error', 'Строка с такими парметрами уже добавлена')
-        else:
-            value_lines.append(temp_string)
+        value_lines.append(temp_string)
         text_dict.update({"lines": value_lines})
         json_insert = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
         listbox.delete(0.0, END)
         listbox.insert(1.0, json_insert)
-        var_list.clear()
-        fmt_list.clear()
-        if type(code_line) is list:
-            code_line.clear()
+        fmt_parameter.clear()
+        code_line.clear()
         string_window.destroy()
 
-    def date_time_checkbox():
-        date_time_parameter = ''
+    def new_add(flag):
 
-        def apply_date_time():
-            global date_time_parameter
-            date_parameter_decoding = {0: "%d.%m.%Y", 1: "%Y.%m.%d", 2: "%y.%m.%d", 3: "%d-%m-%y", 4: "%y-%m-%d",
-                                       5: "%d-%m-%Y", 6: "%Y-%m-%d"}
-            time_parameter_decoding = {0: "%H-%M-%S", 1: "%H:%M:%S", 2: "%H-%M", 3: "%H:%M"}
-            choice_date = check_var_date.get()
-            choice_time = check_var_time.get()
-            date_parameter = date_parameter_decoding.get(choice_date)
-            time_parameter = time_parameter_decoding.get(choice_time)
-            date_time_parameter = str(date_parameter) + ' ' + str(time_parameter)
-            if date_parameter is None or time_parameter is None:
-                message_window = Toplevel()
-                message_window.title("Добавление строки в шаблон")
-                message_window.geometry("350x100")
-                message_window.config(bg='#E6E6FA')
-                label_message = Label(message_window, text='Параметры дата/время не выбраны', height=1, width=15,
-                                      font='times 11', relief=GROOVE)
-                label_message.place(x=10, y=10)
-                label_message.config(bg='#e7f236')
+        global tmp_code, tmp_fmt_parameter, code_line, fmt_parameter
+        tmp_code = ''
+        tmp_fmt_parameter = ''
+        select = ''
+
+        def search_parameter_no_standard_string(input_parameter, input_type):
+            global tmp_code, tmp_fmt_parameter
+            code_type = code_type_menu.get(input_type)
+            if code_type == '%ls':
+                tmp_code = input_parameter
+                tmp_fmt_parameter = "{%s}" % input_parameter + "%ls"
             else:
-                fmt_parameter.append(date_time_parameter)
-                button_apply.destroy()
-                return fmt_parameter
+                tmp_code = input_parameter + '|' + code_type
+                if code_type == "t_curr":
+                    tmp_fmt_parameter = "{%s}" % input_parameter + "%.2f"
+                elif code_type == "t_qty":
+                    tmp_fmt_parameter = "{%s}" % input_parameter + "%.3f"
 
-        label_date = Label(string_window, text="Date Parameter", height=1, width=14, font='times 10', relief=GROOVE)
-        label_date.place(x=600, y=10)
-        label_date.config(bg='#7FFFD4')
-        check_var_date = IntVar(value=0)
-        check_var_date.set(0)
-        check1 = Radiobutton(string_window, text="dd.mm.yyyy", variable=check_var_date, value=0)
-        check1.place(x=600, y=40)
-        check2 = Radiobutton(string_window, text="yyyy.mm.dd", variable=check_var_date, value=1)
-        check2.place(x=600, y=60)
-        check3 = Radiobutton(string_window, text="dd.mm.yy", variable=check_var_date, value=2)
-        check3.place(x=600, y=80)
-        check4 = Radiobutton(string_window, text="yy.mm.dd", variable=check_var_date, value=3)
-        check4.place(x=600, y=100)
-        check5 = Radiobutton(string_window, text="dd-mm-yy", variable=check_var_date, value=4)
-        check5.place(x=600, y=120)
-        check6 = Radiobutton(string_window, text="yy-mm-dd", variable=check_var_date, value=5)
-        check6.place(x=600, y=140)
-        check7 = Radiobutton(string_window, text="dd-mm-yyyy", variable=check_var_date, value=6)
-        check7.place(x=600, y=160)
-        check8 = Radiobutton(string_window, text="yyyy-mm-dd", variable=check_var_date, value=7)
-        check8.place(x=600, y=180)
-        label_time = Label(string_window, text="Time Parameter", height=1, width=14, font='times 10', relief=GROOVE)
-        label_time.place(x=600, y=210)
-        label_time.config(bg='#7FFFD4')
-        check_var_time = IntVar(value=0)
-        check_var_time.set(0)
-        check9 = Radiobutton(string_window, text="HH-MM-SS", variable=check_var_time, value=0)
-        check9.place(x=600, y=230)
-        check10 = Radiobutton(string_window, text="HH:MM:SS", variable=check_var_time, value=1)
-        check10.place(x=600, y=250)
-        check11 = Radiobutton(string_window, text="HH-MM", variable=check_var_time, value=2)
-        check11.place(x=600, y=270)
-        check12 = Radiobutton(string_window, text="HH:MM", variable=check_var_time, value=3)
-        check12.place(x=600, y=290)
-        button_apply = Button(string_window, text="Применить вид дата/время", width=22, height=1,
-                              command=apply_date_time, font='times 11')
-        button_apply.place(x=600, y=340, anchor="c")
-        return check_var_date, check_var_time, fmt_parameter
+        def search_parameter_standard_string(input_parameter):
 
-    def add():
-        global fmt_parameter, fmt_list, var_line, list_no_standard_type
-        flag = 0
-        real_list.clear()
-        if type(fmt_parameter) is list:
-            fmt_parameter.clear()
-        select = standard_option_select.get()
+            global tmp_code, tmp_fmt_parameter
+
+            def date_time_checkbox():
+                global tmp_fmt_parameter
+
+                date_time_parameter = ''
+
+                def apply_date_time():
+                    global date_time_parameter, tmp_fmt_parameter
+                    date_parameter_decoding = {0: "%d.%m.%Y", 1: "%Y.%m.%d", 2: "%y.%m.%d", 3: "%d-%m-%y",
+                                               4: "%y-%m-%d",
+                                               5: "%d-%m-%Y", 6: "%Y-%m-%d"}
+                    time_parameter_decoding = {0: "%H-%M-%S", 1: "%H:%M:%S", 2: "%H-%M", 3: "%H:%M"}
+                    choice_date = check_var_date.get()
+                    choice_time = check_var_time.get()
+                    date_parameter = date_parameter_decoding.get(choice_date)
+                    time_parameter = time_parameter_decoding.get(choice_time)
+                    date_time_parameter = str(date_parameter) + ' ' + str(time_parameter)
+                    if date_parameter is None or time_parameter is None:
+                        message_window = Toplevel()
+                        message_window.title("Добавление строки в шаблон")
+                        message_window.geometry("350x100")
+                        message_window.config(bg='#E6E6FA')
+                        label_message = Label(message_window, text='Параметры дата/время не выбраны', height=1, width=15
+                                              , font='times 11', relief=GROOVE)
+                        label_message.place(x=10, y=10)
+                        label_message.config(bg='#e7f236')
+                    else:
+                        tmp_fmt_parameter = date_time_parameter
+                        code_line.append(tmp_code)
+                        fmt_parameter.append(tmp_fmt_parameter)
+                        list_option_select.append(select)
+                        listbox_option_select.delete(0, END)
+                        for item in list_option_select:
+                            listbox_option_select.insert(END, item)
+                            real_list.append(item)
+                        data_time_window.destroy()
+
+                data_time_window = Toplevel()
+                data_time_window.title('Выбор отображения параметра даты и времени')
+                data_time_window.geometry("200x400")
+                data_time_window.config(bg='#E6E6FA')
+                label_date = Label(data_time_window, text="Date Parameter", height=1, width=14, font='times 10',
+                                   relief=GROOVE)
+                label_date.place(x=10, y=10)
+                label_date.config(bg='#7FFFD4')
+                check_var_date = IntVar(value=0)
+                check_var_date.set(0)
+                check1 = Radiobutton(data_time_window, text="dd.mm.yyyy", variable=check_var_date, value=0)
+                check1.place(x=10, y=40)
+                check2 = Radiobutton(data_time_window, text="yyyy.mm.dd", variable=check_var_date, value=1)
+                check2.place(x=10, y=60)
+                check3 = Radiobutton(data_time_window, text="dd.mm.yy", variable=check_var_date, value=2)
+                check3.place(x=10, y=80)
+                check4 = Radiobutton(data_time_window, text="yy.mm.dd", variable=check_var_date, value=3)
+                check4.place(x=10, y=100)
+                check5 = Radiobutton(data_time_window, text="dd-mm-yy", variable=check_var_date, value=4)
+                check5.place(x=10, y=120)
+                check6 = Radiobutton(data_time_window, text="yy-mm-dd", variable=check_var_date, value=5)
+                check6.place(x=10, y=140)
+                check7 = Radiobutton(data_time_window, text="dd-mm-yyyy", variable=check_var_date, value=6)
+                check7.place(x=10, y=160)
+                check8 = Radiobutton(data_time_window, text="yyyy-mm-dd", variable=check_var_date, value=7)
+                check8.place(x=10, y=180)
+                label_time = Label(data_time_window, text="Time Parameter", height=1, width=14, font='times 10',
+                                   relief=GROOVE)
+                label_time.place(x=10, y=210)
+                label_time.config(bg='#7FFFD4')
+                check_var_time = IntVar(value=0)
+                check_var_time.set(0)
+                check9 = Radiobutton(data_time_window, text="HH-MM-SS", variable=check_var_time, value=0)
+                check9.place(x=10, y=230)
+                check10 = Radiobutton(data_time_window, text="HH:MM:SS", variable=check_var_time, value=1)
+                check10.place(x=10, y=250)
+                check11 = Radiobutton(data_time_window, text="HH-MM", variable=check_var_time, value=2)
+                check11.place(x=10, y=270)
+                check12 = Radiobutton(data_time_window, text="HH:MM", variable=check_var_time, value=3)
+                check12.place(x=10, y=290)
+                button_apply = Button(data_time_window, text="Применить вид дата/время", width=22, height=1,
+                                      command=apply_date_time, font='times 11')
+                button_apply.place(x=100, y=340, anchor="c")
+
+                mainloop()
+
+            list_fmt_d = ('#002', '#003', '#004', '#005', '#021', '#022')
+            list_fmt_parameter_d = {'#002': '№ КСА в СКНО:%d', '#003': 'УНП:%d', '#004': '№ Регистрации: %d',
+                                    '#005': 'Количество перерег.: %d', '#021': '№ Отчета из БЭП: %d',
+                                    '#022': '№ Смены: %d'}
+            list_fmt_u = '#001'
+            list_fmt_parameter_u = {'#001': 'Рег.№ КСА:%u'}
+            list_fmt_s = '#020'
+            list_fmt_parameter_s = {'#020': 'UID СКНО:%s'}
+            list_fmt_f = ('#030', '#031', '#032', '#033', '#034', '#035')
+            list_fmt_parameter_f = {'#030': 'Итог по док. %f', '#031': 'Пред-итог %f',
+                                    '#032': 'Скидка/надб. на пред-итог %f', '#033': 'Сумарная скидка/надб. по поз. %f',
+                                    '#034': 'Общая скидка/надб. по док. %f',
+                                    '#035': 'Скидка/надб. на поз. в чек прод/возвр. %f'}
+            list_fmt_structure_tm = ('#025', '#026', '#027', '#028', '#029')
+            tmp_code = code_options.get(input_parameter)
+            if tmp_code in list_fmt_d:
+                tmp_fmt_parameter = list_fmt_parameter_d.get(tmp_code)
+            elif tmp_code in list_fmt_u:
+                tmp_fmt_parameter = list_fmt_parameter_u.get(tmp_code)
+            elif tmp_code in list_fmt_s:
+                tmp_fmt_parameter = list_fmt_parameter_s.get(tmp_code)
+            elif tmp_code in list_fmt_f:
+                tmp_fmt_parameter = list_fmt_parameter_f.get(tmp_code)
+            elif tmp_code in list_fmt_structure_tm:
+                date_time_checkbox()
+
+        if flag == 0:
+            select_standard = standard_option_select.get()
+            select = select_standard
+            search_parameter_standard_string(select_standard)
+        elif flag == 1:
+            select_entry = entry_selection.get()
+            type_select_entry = no_standard_type_select.get()
+            select = select_entry
+            search_parameter_no_standard_string(select_entry, type_select_entry)
+        code_line.append(tmp_code)
+        fmt_parameter.append(tmp_fmt_parameter)
         list_option_select.append(select)
         listbox_option_select.delete(0, END)
         for item in list_option_select:
             listbox_option_select.insert(END, item)
             real_list.append(item)
-            if item in code_options:
-                code = code_options.get(item)
-                if code in list_fmt_d:
-                    if code == '#002':
-                        fmt_parameter.append('№ КСА в СКНО:%d')
-                    elif code == '#003':
-                        fmt_parameter.append('УНП:%d')
-                    elif code == '#004':
-                        fmt_parameter.append('№ Регистрации: %d')
-                    elif code == '#005':
-                        fmt_parameter.append('Количество перерег.: %d')
-                    elif code == '#021':
-                        fmt_parameter.append('№ Отчета из БЭП: %d')
-                    elif code == '#022':
-                        fmt_parameter.append('№ Смены: %d')
-                elif code in list_fmt_u:
-                    fmt_parameter.append('Рег.№ КСА:%u')
-                elif code in list_fmt_s:
-                    fmt_parameter.append('UID СКНО:%s')
-                elif code in list_fmt_f:
-                    if code == '#030':
-                        fmt_parameter.append('Итог по док. %f')
-                    elif code == '#031':
-                        fmt_parameter.append('Пред-итог %f')
-                    elif code == '#032':
-                        fmt_parameter.append('Скидка/надб. на пред-итог %f')
-                    elif code == '#033':
-                        fmt_parameter.append('Сумарная скидка/надб. по поз. %f')
-                    elif code == '#034':
-                        fmt_parameter.append('Общая скидка/надб. по док. %f')
-                    elif code == '#035':
-                        fmt_parameter.append('Скидка/надб. на поз. в чек прод/возвр. %f')
-                elif code in list_fmt_struct_tm:
-                    date_time_checkbox()
-            else:
-                add_entry_type = list_no_standard_type[flag]
-                fmt_parameter.append(add_entry_type)
-                flag += 1
-                # fmt_list = [fmt_parameter]
-                #fmt_parameter = fmt_list
+
+    def new_std_str():
+        new_add(0)
+
+    def new_no_std_str():
+        new_add(1)
 
     def add_entry():
-        global fmt_parameter, var_line, var_list, list_no_standard_type
+        global tmp_fmt_parameter, var_line, var_list, list_no_standard_type
         fmt_line = ''
         fmt_parameter_list = []
         real_list.clear()
-        select = nonstandard_option_selection.get()
+        select = entry_selection.get()
         type_select = no_standard_type_select.get()
         list_option_select.append(select)
         listbox_option_select.delete(0, END)
@@ -491,16 +494,16 @@ def add_string():
                     if var_line not in list_no_standard_type:
                         list_no_standard_type.append(var_line)
         if len(list_option_select) == 1:
-            fmt_parameter = fmt_line
+            tmp_fmt_parameter = fmt_line
         elif len(list_option_select) == 2:
-            if type(fmt_parameter) is list:
-                fmt_parameter.append(fmt_line)
+            if type(tmp_fmt_parameter) is list:
+                tmp_fmt_parameter.append(fmt_line)
             else:
-                fmt_parameter_list.append(fmt_parameter)
+                fmt_parameter_list.append(tmp_fmt_parameter)
                 fmt_parameter_list.append(fmt_line)
-                fmt_parameter = fmt_parameter_list
+                tmp_fmt_parameter = fmt_parameter_list
         elif len(list_option_select) > 2:
-            fmt_parameter.append(fmt_line)
+            tmp_fmt_parameter.append(fmt_line)
 
     def del_select():
         global real_list
@@ -536,7 +539,7 @@ def add_string():
             listbox_option_select.insert(pos + 1, text)
 
     real_list = []
-    nonstandard_option_selection = StringVar()
+    entry_selection = StringVar()
     string_window = Toplevel()
     string_window.title("Добавление строки в шаблон")
     string_window.geometry("850x550")
@@ -558,15 +561,15 @@ def add_string():
     option_menu_type = OptionMenu(string_window, no_standard_type_select, *list_type_menu.values())
     option_menu_type.grid(column=2, row=3)
     option_menu_type.config(width=50, height=1)
-    button_menu = Button(string_window, width=10, height=1, text="Добавить", command=add)
+    button_menu = Button(string_window, width=10, height=1, text="Добавить", command=new_std_str)
     button_menu.grid(column=3, row=1)
     label_entry = Label(string_window, text='Не стандартные :', height=1, width=18, font='times 11', relief=GROOVE)
     label_entry.grid(column=1, row=2)
     label_entry.config(bg='#e7f236')
-    option_entry = Entry(string_window, textvariable=nonstandard_option_selection)
+    option_entry = Entry(string_window, textvariable=entry_selection)
     option_entry.grid(column=2, row=2)
     option_entry.config(width=55)
-    button_entry = Button(string_window, width=10, height=1, text="Добавить", command=add_entry)
+    button_entry = Button(string_window, width=10, height=1, text="Добавить", command=new_no_std_str)
     button_entry.grid(column=3, row=2)
     listbox_option_select = Listbox(string_window, width=55, height=15, font=('times', 12), selectbackground='BLUE')
     listbox_option_select.place(x=50, y=200)
@@ -582,7 +585,7 @@ def add_string():
     move_up__button.place(x=505, y=230)
     move_down__button = Button(string_window, width=3, height=1, text="▼", command=move_down)
     move_down__button.place(x=505, y=270)
-    apply_form = Button(string_window, text="Apply", width=5, height=1, command=apply_string, font='times 11')
+    apply_form = Button(string_window, text="Apply", width=5, height=1, command=new_apply_string, font='times 11')
     apply_form.place(relx=0.8, rely=0.9, anchor="c")
 
     mainloop()
