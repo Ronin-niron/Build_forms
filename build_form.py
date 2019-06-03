@@ -1,9 +1,10 @@
 #! python
 import json
 import os
+import socket
 from tkinter import *
 from tkinter import ttk, messagebox
-import socket
+from tkinter.filedialog import asksaveasfile
 
 result_symbol = 'не задан'
 result_message = 'не задан'
@@ -19,9 +20,16 @@ doctype_list = {'1': '-чек продажи', '2': '-чек возврата', 
 
 def select_close():
     try:
-        sys.exit()
-    except Exception:
-        print('закрытия программы(select_close)', '!!!')
+        line = listbox.get(1.0, END)
+        if line is not '\n':
+            answer = messagebox.askyesno('Возможно будут утеряны даннные', 'Форма не пуста, Вы уверены, '
+                                                                           'что шаблон сохранен?\nЗакрыть программу?')
+            if answer:
+                sys.exit()
+        else:
+            sys.exit()
+    except Exception as err:
+        messagebox.showwarning('Ошибка при закрытии программы', 'str(%s)' % err)
 
 
 def create_form():
@@ -32,76 +40,89 @@ def create_form():
     def exit_setting():
         try:
             create.destroy()
-        except Exception:
-            print('закрытия программы(exit_setting)', '!!!')
+        except Exception as err:
+            messagebox.showwarning('Ошибка при закрытии программы', 'str(%s)' % err)
 
     def update_parameters():
         global tmp_line, json_insert, json_settings, lines_dict
-        listbox.delete(1.0, 7.0)
-        result_signs = mess_symbol.get()
-        result_signs = 80
-        if result_signs == 0 or result_signs > 80:
-            messagebox.showwarning('Error', 'Количество знаков в строке не должно быть 0 или больше 80')
-        else:
-            number_of_signs = Label(frame, text="Кол-во знаков " + str(result_signs), width=23, height=1,
-                                    font='times 11', relief=GROOVE)
-            number_of_signs.grid(column=11, row=1)
-            number_of_signs.config(bg='#e7f236')
-        result_paper = message.get()
-        result_paper = 80
-        if result_paper == 0 or result_paper > 80:
-            messagebox.showinfo('Error', 'Ширина бумаги не должна быть 0 или больше 80')
-        else:
-            paper_width = Label(frame, text="Ширина бумаги " + str(result_paper), width=23, height=1, font='times 11',
-                                relief=GROOVE)
-            paper_width.grid(column=10, row=1)
-            paper_width.config(bg='#e7f236')
-        lines_dict = []
-        select = locale_select.get()
-        locale = value_locate.get(select)
-        json_settings = {"columns": result_signs, "paperWidth": result_paper, "locale": locale, "lines": lines_dict}
-        json_insert = json.dumps(json_settings, sort_keys=False, indent=4, ensure_ascii=False)
-        listbox.insert(1.0, json_insert)
-        tmp_line = listbox.get(1.0, END)
-        create.destroy()
+        try:
+            line = listbox.get(1.0, END)
+            if line is not '\n' or None:
+                answer = messagebox.askyesno('Возможно будут утеряны даннные', 'Форма не пуста, Вы уверены,'
+                                                                               ' что шаблон сохранен?\n'
+                                                                               'Очистить форму и создать новый?')
+                if not answer:
+                    raise Exception
+            listbox.delete(1.0, END)
+            result_signs = mess_symbol.get()
+            result_signs = 80
+            if result_signs == 0 or result_signs > 80:
+                messagebox.showwarning('Error', 'Количество знаков в строке не должно быть 0 или больше 80')
+            else:
+                number_of_signs = Label(frame, text="Кол-во знаков " + str(result_signs), width=23, height=1,
+                                        font='times 12', relief=GROOVE)
+                number_of_signs.grid(column=11, row=1)
+                number_of_signs.config(bg='#e7f236')
+            result_paper = message.get()
+            result_paper = 80
+            if result_paper == 0 or result_paper > 80:
+                messagebox.showinfo('Error', 'Ширина бумаги не должна быть 0 или больше 80')
+            else:
+                paper_width = Label(frame, text="Ширина бумаги " + str(result_paper), width=23, height=1, font='times 12',
+                                    relief=GROOVE)
+                paper_width.grid(column=10, row=1)
+                paper_width.config(bg='#e7f236')
+            lines_dict = []
+            select = locale_select.get()
+            locale = value_locate.get(select)
+            json_settings = {"columns": result_signs, "paperWidth": result_paper, "locale": locale, "lines": lines_dict}
+            json_insert = json.dumps(json_settings, sort_keys=False, indent=4, ensure_ascii=False)
+            listbox.insert(1.0, json_insert)
+            tmp_line = listbox.get(1.0, END)
+            create.destroy()
+        except Exception as err:
+            messagebox.showwarning('Ошибка при добавлении', 'str(%s)' % err)
 
     message = IntVar()
     mess_symbol = IntVar()
     create = Toplevel()
     create.title("Выбрать параметры шаблона")
-    create.geometry("385x200")
+    create.geometry("360x200")
     lab = Label(create, text="", width=50,
                 height=10, font=('times', 12))
     lab.place(relx=.5, rely=.3, anchor="n")
     paper_entry = Entry(create, textvariable=message)
-    paper_entry.grid(column=1, row=1)
-    label_paper = Label(create, text="Ширина бумаги 1-80", width=25, height=1, font='times 11', relief=GROOVE)
-    label_paper.grid(column=2, row=1)
-    label_paper.config(bg='#FF0000')
-    label_symbol = Label(create, text="Кол-во знаков в строке 1-80", width=25, height=1, font='times 11', relief=GROOVE)
-    label_symbol.grid(column=2, row=2)
-    label_symbol.config(bg='#FF0000')
+    paper_entry.grid(column=2, row=1)
+    paper_entry.config(width=28)
+    label_paper = Label(create, text="Ширина бумаги 1-80", width=22, height=1, font='times 11', relief=GROOVE)
+    label_paper.grid(column=1, row=1)
+    label_paper.config(bg='#e84343')
+    label_symbol = Label(create, text="Кол-во знаков в строке 1-80", width=22, height=1, font='times 11', relief=GROOVE)
+    label_symbol.grid(column=1, row=2)
+    label_symbol.config(bg='#e84343')
     symbol_entry = Entry(create, textvariable=mess_symbol)
-    symbol_entry.grid(column=1, row=2)
-    btn_cancel = Button(create, text="Cancel", command=exit_setting, width=5, height=1, font='times 11')
+    symbol_entry.grid(column=2, row=2)
+    symbol_entry.config(width=28)
+    btn_cancel = Button(create, text="Cancel", command=exit_setting, width=5, height=1, font='times 11',
+                        relief=GROOVE, activebackground='light blue')
     btn_cancel.place(relx=0.9, rely=0.9, anchor="c")
-    apply_form = Button(create, text="Apply", width=5, height=1, command=update_parameters, font='times 11')
+    apply_form = Button(create, text="Apply", width=5, height=1, command=update_parameters, font='times 11',
+                        relief=GROOVE, activebackground='light blue')
     apply_form.place(relx=0.75, rely=0.9, anchor="c")
     locale_select = StringVar(root)
     locale_select.set(list_locale.get(0))
     locale_menu = OptionMenu(create, locale_select, *list_locale.values())
     locale_menu.grid(column=1, row=3)
-    locale_menu.config(width=22, height=1)
+    locale_menu.config(width=24, height=1, relief=GROOVE, activebackground='light blue')
     create.mainloop()
 
 
 def apply_global_text():
-    global new_form, ip_address, ip_entry_socket
+    global new_form, ip_address, ip_entry_socket, finish
     # ip_entry_socket = ip_address.get()
-    ip_entry_socket = '10.10.10.136'
+    ip_entry_socket = '10.10.11.226'
     listbox2.delete(0, END)
     temp_line = listbox.get(1.0, END)
-    text = listbox.get(1.0, END)
     text_dict = []
     finish_view = {}
     data_dict = []
@@ -109,6 +130,7 @@ def apply_global_text():
     new_form = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
     core = 10001
     message = '{"id": 107, "data": {"preview": "true", "docPrintTemplate": %s}}' % new_form
+    # message = '{"id": 107, "data": {"preview": "true", "docPrintTemplate": %s, "number":"123456"}}' % new_form
     try:
         global port
         port = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -140,105 +162,119 @@ def apply_global_text():
 def settings_change():
     global setting_file, json_insert, json_settings
 
-    def survey_of_choice():
-        global json_insert, tmp_line, json_settings
-        check_value1 = check_var1.get()
-        check_value2 = check_var2.get()
-        check_value3 = check_var3.get()
-        check_value4 = check_var4.get()
-        check_value5 = check_var5.get()
-        check_value6 = check_var6.get()
-        check_value7 = check_var7.get()
-        check_value8 = check_var8.get()
-        check_value9 = check_var9.get()
-        check_value10 = check_var10.get()
-        check_value11 = check_var11.get()
-        check_value12 = check_var12.get()
-        check_value_list = (check_value1, check_value2, check_value3, check_value4, check_value5, check_value6,
-                            check_value7, check_value8, check_value9, check_value10, check_value11, check_value12)
-        check_value_name = ({"pAlignment": "left"}, {"pAlignment": "center"}, {"pAlignment": "right"},
-                            {"pCharSize": "std_size"}, {"pCharSize": "dbl_height"},
-                            {"pBarcodeW": 1, "pBarcodeH": 50, "pBarcodeHRI": "below"}, ["aPrintBarcode", "code128"],
-                            ["aCutPaper", "partial"], ["aSendRawData", "1D284C0600304520200101"],
-                            ["aSendRawData", "1B2500"], ["aSendRawData", "1B2501"], ["aSendRawData", "1B4A40"])
-        place_dict = -1
-        settings_parameter = []
-        for choice in check_value_list:
-            place_dict += 1
-            if choice:
-                insert_check_dict = check_value_name[place_dict]
-                settings_parameter.append(insert_check_dict)
-        text = listbox.get(1.0, END)
-        text_dict = []
-        text_dict = eval(text)
-        line_settings = {"settings": settings_parameter}
-        text_dict.update(line_settings)
-        new_json = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False, skipkeys=True)
-        listbox.delete(1.0, END)
-        listbox.insert(1.0, new_json)
-        settings_window.destroy()
+    try:
+        def survey_of_choice():
+            global json_insert, tmp_line, json_settings
+            check_value1 = check_var1.get()
+            check_value2 = check_var2.get()
+            check_value3 = check_var3.get()
+            check_value4 = check_var4.get()
+            check_value5 = check_var5.get()
+            check_value6 = check_var6.get()
+            check_value7 = check_var7.get()
+            check_value8 = check_var8.get()
+            check_value9 = check_var9.get()
+            check_value10 = check_var10.get()
+            check_value11 = check_var11.get()
+            check_value12 = check_var12.get()
+            check_value_list = (check_value1, check_value2, check_value3, check_value4, check_value5, check_value6,
+                                check_value7, check_value8, check_value9, check_value10, check_value11, check_value12)
+            check_value_name = ({"pAlignment": "left"}, {"pAlignment": "center"}, {"pAlignment": "right"},
+                                {"pCharSize": "std_size"}, {"pCharSize": "dbl_height"},
+                                {"pBarcodeW": 1, "pBarcodeH": 50, "pBarcodeHRI": "below"}, ["aPrintBarcode", "code128"],
+                                ["aCutPaper", "partial"], ["aSendRawData", "1D284C0600304520200101"],
+                                ["aSendRawData", "1B2500"], ["aSendRawData", "1B2501"], ["aSendRawData", "1B4A40"])
+            place_dict = -1
+            settings_parameter = []
 
-    settings_window = Toplevel()
-    settings_window.title("Выбрать параметры шаблона")
-    settings_window.geometry("700x250")
-    check_var1 = BooleanVar()
-    check_var1.set(0)
-    check1 = Checkbutton(settings_window, text="Выравнивание по левому краю", variable=check_var1, onvalue=1,
-                         offvalue=0)
-    check1.place(relx=0.1, rely=0.1, anchor=W)
-    check_var2 = BooleanVar()
-    check_var2.set(0)
-    check2 = Checkbutton(settings_window, text="Выравнивание по центру", variable=check_var2, onvalue=1, offvalue=0)
-    check2.place(relx=0.1, rely=0.2, anchor=W)
-    check_var3 = BooleanVar()
-    check_var3.set(0)
-    check3 = Checkbutton(settings_window, text="Выравнивание по правому краю", variable=check_var3, onvalue=1,
-                         offvalue=0)
-    check3.place(relx=0.1, rely=0.3, anchor=W)
-    check_var4 = BooleanVar()
-    check_var4.set(0)
-    check4 = Checkbutton(settings_window, text='{"pCharSize":"std_size"}', variable=check_var4, onvalue=1, offvalue=0)
-    check4.place(relx=0.1, rely=0.4, anchor=W)
-    check_var5 = BooleanVar()
-    check_var5.set(0)
-    check5 = Checkbutton(settings_window, text='{"pCharSize":"dbl_height"}', variable=check_var5, onvalue=1, offvalue=0)
-    check5.place(relx=0.1, rely=0.5, anchor=W)
-    check_var6 = BooleanVar()
-    check_var6.set(0)
-    check6 = Checkbutton(settings_window, text='{"pBarcodeW":1, "pBarcodeH":50, "pBarcodeHRI":"below" }',
-                         variable=check_var6, onvalue=1, offvalue=0)
-    check6.place(relx=0.1, rely=0.6, anchor=W)
-    check_var7 = BooleanVar()
-    check_var7.set(0)
-    check7 = Checkbutton(settings_window, text='["aPrintBarcode", "code128"]', variable=check_var7, onvalue=1,
-                         offvalue=0)
-    check7.place(relx=0.1, rely=0.7, anchor=W)
-    check_var8 = BooleanVar()
-    check_var8.set(0)
-    check8 = Checkbutton(settings_window, text='["aCutPaper", "partial"]', variable=check_var8, onvalue=1, offvalue=0)
-    check8.place(relx=0.1, rely=0.8, anchor=W)
-    check_var9 = BooleanVar()
-    check_var9.set(0)
-    check9 = Checkbutton(settings_window, text='["aSendRawData", "1D284C0600304520200101"]', variable=check_var9,
-                         onvalue=1, offvalue=0)
-    check9.place(relx=0.1, rely=0.9, anchor=W)
-    check_var10 = BooleanVar()
-    check_var10.set(0)
-    check10 = Checkbutton(settings_window, text='["aSendRawData", "1B2500"]', variable=check_var10, onvalue=1,
-                          offvalue=0)
-    check10.place(relx=0.5, rely=0.1, anchor=W)
-    check_var11 = BooleanVar()
-    check_var11.set(0)
-    check11 = Checkbutton(settings_window, text='["aSendRawData", "1B2501"]', variable=check_var11, onvalue=1,
-                          offvalue=0)
-    check11.place(relx=0.5, rely=0.2, anchor=W)
-    check_var12 = BooleanVar()
-    check_var12.set(0)
-    check12 = Checkbutton(settings_window, text='["aSendRawData", "1B4A40"]', variable=check_var12, onvalue=1,
-                          offvalue=0)
-    check12.place(relx=0.5, rely=0.3, anchor=W)
-    apply_form = Button(settings_window, text="Apply", width=5, height=1, command=survey_of_choice, font='times 11')
-    apply_form.place(relx=0.8, rely=0.9, anchor="c")
+            line = listbox.get(1.0, END)
+            for choice in check_value_list:
+                place_dict += 1
+                if choice:
+                    insert_check_dict = check_value_name[place_dict]
+                    settings_parameter.append(insert_check_dict)
+            text = listbox.get(1.0, END)
+            if text is not "\n" or '':
+                text_dict = []
+                text_dict = eval(text)
+                if type(text_dict) is dict:
+                    line_settings = {"settings": settings_parameter}
+                    text_dict.update(line_settings)
+                    new_json = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False, skipkeys=True)
+                    listbox.delete(1.0, END)
+                    listbox.insert(1.0, new_json)
+                    settings_window.destroy()
+                else:
+                    messagebox.showwarning('Ошибка при добавлении параметра.', 'Возможно не создан шаблон.')
+                    settings_window.destroy()
+            else:
+                messagebox.showwarning('Ошибка при добавлении параметра.', 'Возможно не создан шаблон.')
+                settings_window.destroy()
+
+        settings_window = Toplevel()
+        settings_window.title("Выбрать параметры шаблона")
+        settings_window.geometry("600x250")
+        check_var1 = BooleanVar()
+        check_var1.set(0)
+        check1 = Checkbutton(settings_window, text="Выравнивание по левому краю", variable=check_var1, onvalue=1,
+                             offvalue=0)
+        check1.place(relx=0.1, rely=0.1, anchor=W)
+        check_var2 = BooleanVar()
+        check_var2.set(0)
+        check2 = Checkbutton(settings_window, text="Выравнивание по центру", variable=check_var2, onvalue=1, offvalue=0)
+        check2.place(relx=0.1, rely=0.2, anchor=W)
+        check_var3 = BooleanVar()
+        check_var3.set(0)
+        check3 = Checkbutton(settings_window, text="Выравнивание по правому краю", variable=check_var3, onvalue=1,
+                             offvalue=0)
+        check3.place(relx=0.1, rely=0.3, anchor=W)
+        check_var4 = BooleanVar()
+        check_var4.set(0)
+        check4 = Checkbutton(settings_window, text='{"pCharSize":"std_size"}', variable=check_var4, onvalue=1, offvalue=0)
+        check4.place(relx=0.1, rely=0.4, anchor=W)
+        check_var5 = BooleanVar()
+        check_var5.set(0)
+        check5 = Checkbutton(settings_window, text='{"pCharSize":"dbl_height"}', variable=check_var5, onvalue=1, offvalue=0)
+        check5.place(relx=0.1, rely=0.5, anchor=W)
+        check_var6 = BooleanVar()
+        check_var6.set(0)
+        check6 = Checkbutton(settings_window, text='{"pBarcodeW":1, "pBarcodeH":50, "pBarcodeHRI":"below" }',
+                             variable=check_var6, onvalue=1, offvalue=0)
+        check6.place(relx=0.1, rely=0.6, anchor=W)
+        check_var7 = BooleanVar()
+        check_var7.set(0)
+        check7 = Checkbutton(settings_window, text='["aPrintBarcode", "code128"]', variable=check_var7, onvalue=1,
+                             offvalue=0)
+        check7.place(relx=0.1, rely=0.7, anchor=W)
+        check_var8 = BooleanVar()
+        check_var8.set(0)
+        check8 = Checkbutton(settings_window, text='["aCutPaper", "partial"]', variable=check_var8, onvalue=1, offvalue=0)
+        check8.place(relx=0.1, rely=0.8, anchor=W)
+        check_var9 = BooleanVar()
+        check_var9.set(0)
+        check9 = Checkbutton(settings_window, text='["aSendRawData", "1D284C0600304520200101"]', variable=check_var9,
+                             onvalue=1, offvalue=0)
+        check9.place(relx=0.1, rely=0.9, anchor=W)
+        check_var10 = BooleanVar()
+        check_var10.set(0)
+        check10 = Checkbutton(settings_window, text='["aSendRawData", "1B2500"]', variable=check_var10, onvalue=1,
+                              offvalue=0)
+        check10.place(relx=0.5, rely=0.1, anchor=W)
+        check_var11 = BooleanVar()
+        check_var11.set(0)
+        check11 = Checkbutton(settings_window, text='["aSendRawData", "1B2501"]', variable=check_var11, onvalue=1,
+                              offvalue=0)
+        check11.place(relx=0.5, rely=0.2, anchor=W)
+        check_var12 = BooleanVar()
+        check_var12.set(0)
+        check12 = Checkbutton(settings_window, text='["aSendRawData", "1B4A40"]', variable=check_var12, onvalue=1,
+                              offvalue=0)
+        check12.place(relx=0.5, rely=0.3, anchor=W)
+        apply_form = Button(settings_window, text="Apply", width=5, height=1, command=survey_of_choice, font='times 11',
+                            relief=GROOVE, activebackground='light blue')
+        apply_form.place(relx=0.95, rely=0.93, anchor="c")
+    except Exception as err:
+        messagebox.showwarning('Ошибка при добавлении', 'str(%s)' % err)
 
 
 def add_string():
@@ -249,9 +285,10 @@ def add_string():
     tmp_fmt_parameter = []
     list_option_select = []
     list_no_standard_type = []
-    list_type_menu = {0: "Тип не установлен", 1: "Сумма денежных средств", 2: "Количество товара", 3: "Дата/время", 4: "Дата"}
+    list_type_menu = {0: "Тип не установлен", 1: "Сумма денежных средств", 2: "Количество товара", 3: "Дата/время",
+                      4: "Дата", 5: "Время"}
     code_type_menu = {"Тип не установлен": "%ls", "Сумма денежных средств": "t_curr", "Количество товара": "t_qty",
-                      "Дата/время": "t_datetime", "Дата": "t_date"}
+                      "Дата/время": "t_datetime", "Дата": "t_date", "Время": "t_time"}
 
     list_options_menu = {0: "Серийный номер КСА (БУ)", 1: "Регистрационный номер КСА в СККО", 2: "УНП владельца",
                          3: "Порядковый номер текущей регистрации КСА", 4: "Количество перерегистраций в БЭП",
@@ -280,19 +317,26 @@ def add_string():
 
     def new_apply_string():
         global temp_string, fmt_parameter, code_line
-        temp_string = {"var": code_line, "fmt": fmt_parameter}
-        text = listbox.get(1.0, END)
-        text_dict = []
-        text_dict = eval(text)
-        value_lines = text_dict.get("lines")
-        value_lines.append(temp_string)
-        text_dict.update({"lines": value_lines})
-        json_insert = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
-        listbox.delete(0.0, END)
-        listbox.insert(1.0, json_insert)
-        fmt_parameter.clear()
-        code_line.clear()
-        string_window.destroy()
+        try:
+            temp_string = {"var": code_line, "fmt": fmt_parameter}
+            text = listbox.get(1.0, END)
+            if '"lines"' in text:
+                text_dict = []
+                text_dict = eval(text)
+                value_lines = text_dict.get("lines")
+                value_lines.append(temp_string)
+                text_dict.update({"lines": value_lines})
+                new_json = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
+                listbox.delete(0.0, END)
+                listbox.insert(1.0, new_json)
+                fmt_parameter.clear()
+                code_line.clear()
+                string_window.destroy()
+            else:
+                messagebox.showwarning('Ошибка при добавлении параметра.', 'Возможно не создан шаблон.')
+                string_window.destroy()
+        except Exception as err:
+            messagebox.showwarning('Ошибка при добавлении', 'str(%s)' % err)
 
     def new_add(flag):
 
@@ -300,60 +344,45 @@ def add_string():
         tmp_code = ''
         tmp_fmt_parameter = ''
         select = ''
+        parameter_choice = ''
 
-        def search_parameter_no_standard_string(input_parameter, input_type):
-            global tmp_code, tmp_fmt_parameter
-            code_type = code_type_menu.get(input_type)
-            if code_type == '%ls':
-                tmp_code = input_parameter
-                tmp_fmt_parameter = "{%s}" % input_parameter + "%ls"
-            else:
-                tmp_code = input_parameter + '|' + code_type
-                if code_type == "t_curr":
-                    tmp_fmt_parameter = "{%s}" % input_parameter + "%.2f"
-                elif code_type == "t_qty":
-                    tmp_fmt_parameter = "{%s}" % input_parameter + "%.3f"
+        def date_time_checkbox(form):
+            global tmp_fmt_parameter, view
+            date_time_parameter = ''
+            view = form
 
-        def search_parameter_standard_string(input_parameter):
-
-            global tmp_code, tmp_fmt_parameter
-
-            def date_time_checkbox():
-                global tmp_fmt_parameter
-
-                date_time_parameter = ''
-
-                def apply_date_time():
-                    global date_time_parameter, tmp_fmt_parameter
-                    date_parameter_decoding = {0: "%d.%m.%Y", 1: "%Y.%m.%d", 2: "%y.%m.%d", 3: "%d-%m-%y",
-                                               4: "%y-%m-%d",
-                                               5: "%d-%m-%Y", 6: "%Y-%m-%d"}
-                    time_parameter_decoding = {0: "%H-%M-%S", 1: "%H:%M:%S", 2: "%H-%M", 3: "%H:%M"}
+            def apply_date_time():
+                global date_time_parameter, tmp_fmt_parameter, view
+                date_parameter_decoding = {0: "%d.%m.%Y", 1: "%Y.%m.%d", 2: "%y.%m.%d", 3: "%d-%m-%y",
+                                           4: "%y-%m-%d",
+                                           5: "%d-%m-%Y", 6: "%Y-%m-%d"}
+                time_parameter_decoding = {0: "%H-%M-%S", 1: "%H:%M:%S", 2: "%H-%M", 3: "%H:%M"}
+                if view == 'data_time':
                     choice_date = check_var_date.get()
                     choice_time = check_var_time.get()
                     date_parameter = date_parameter_decoding.get(choice_date)
                     time_parameter = time_parameter_decoding.get(choice_time)
                     date_time_parameter = str(date_parameter) + ' ' + str(time_parameter)
-                    if date_parameter is None or time_parameter is None:
-                        message_window = Toplevel()
-                        message_window.title("Добавление строки в шаблон")
-                        message_window.geometry("350x100")
-                        message_window.config(bg='#E6E6FA')
-                        label_message = Label(message_window, text='Параметры дата/время не выбраны', height=1, width=15
-                                              , font='times 11', relief=GROOVE)
-                        label_message.place(x=10, y=10)
-                        label_message.config(bg='#e7f236')
-                    else:
-                        tmp_fmt_parameter = date_time_parameter
-                        code_line.append(tmp_code)
-                        fmt_parameter.append(tmp_fmt_parameter)
-                        list_option_select.append(select)
-                        listbox_option_select.delete(0, END)
-                        for item in list_option_select:
-                            listbox_option_select.insert(END, item)
-                            real_list.append(item)
-                        data_time_window.destroy()
+                    tmp_fmt_parameter = date_time_parameter
+                elif view == 'date':
+                    choice_date = check_var_date.get()
+                    date_parameter = date_parameter_decoding.get(choice_date)
+                    tmp_fmt_parameter = date_parameter
+                elif view == 'time':
+                    choice_time = check_var_time.get()
+                    time_parameter = time_parameter_decoding.get(choice_time)
+                    tmp_fmt_parameter = time_parameter
+                code_line.append(tmp_code)
+                fmt_parameter.append(tmp_fmt_parameter)
+                list_option_select.append(select)
+                listbox_option_select.delete(0, END)
+                option_entry.delete(0, END)
+                for line in list_option_select:
+                    listbox_option_select.insert(END, line)
+                    real_list.append(line)
+                data_time_window.destroy()
 
+            if form == 'data_time':
                 data_time_window = Toplevel()
                 data_time_window.title('Выбор отображения параметра даты и времени')
                 data_time_window.geometry("200x400")
@@ -394,18 +423,94 @@ def add_string():
                 check11.place(x=10, y=270)
                 check12 = Radiobutton(data_time_window, text="HH:MM", variable=check_var_time, value=3)
                 check12.place(x=10, y=290)
+                button_apply = Button(data_time_window, text="Применить вид дата/время", width=22, font='times 11',
+                                      command=apply_date_time, relief=GROOVE, activebackground='light blue')
+                button_apply.place(x=100, y=340, anchor="c")
+            elif form == 'date':
+                data_time_window = Toplevel()
+                data_time_window.title('Выбор отображения параметра даты')
+                data_time_window.geometry("200x300")
+                data_time_window.config(bg='#E6E6FA')
+                label_date = Label(data_time_window, text="Date Parameter", height=1, width=14, font='times 10',
+                                   relief=GROOVE)
+                label_date.place(x=10, y=10)
+                label_date.config(bg='#7FFFD4')
+                check_var_date = IntVar(value=0)
+                check_var_date.set(0)
+                check1 = Radiobutton(data_time_window, text="dd.mm.yyyy", variable=check_var_date, value=0)
+                check1.place(x=10, y=40)
+                check2 = Radiobutton(data_time_window, text="yyyy.mm.dd", variable=check_var_date, value=1)
+                check2.place(x=10, y=60)
+                check3 = Radiobutton(data_time_window, text="dd.mm.yy", variable=check_var_date, value=2)
+                check3.place(x=10, y=80)
+                check4 = Radiobutton(data_time_window, text="yy.mm.dd", variable=check_var_date, value=3)
+                check4.place(x=10, y=100)
+                check5 = Radiobutton(data_time_window, text="dd-mm-yy", variable=check_var_date, value=4)
+                check5.place(x=10, y=120)
+                check6 = Radiobutton(data_time_window, text="yy-mm-dd", variable=check_var_date, value=5)
+                check6.place(x=10, y=140)
+                check7 = Radiobutton(data_time_window, text="dd-mm-yyyy", variable=check_var_date, value=6)
+                check7.place(x=10, y=160)
+                check8 = Radiobutton(data_time_window, text="yyyy-mm-dd", variable=check_var_date, value=7)
+                check8.place(x=10, y=180)
                 button_apply = Button(data_time_window, text="Применить вид дата/время", width=22, height=1,
                                       command=apply_date_time, font='times 11')
-                button_apply.place(x=100, y=340, anchor="c")
+                button_apply.place(x=100, y=240, anchor="c")
+            elif form == 'time':
+                data_time_window = Toplevel()
+                data_time_window.title('Выбор отображения параметра даты и времени')
+                data_time_window.geometry("200x250")
+                data_time_window.config(bg='#E6E6FA')
+                check_var_date = IntVar(value=0)
+                check_var_date.set(0)
+                label_time = Label(data_time_window, text="Time Parameter", height=1, width=14, font='times 10',
+                                   relief=GROOVE)
+                label_time.place(x=10, y=10)
+                label_time.config(bg='#7FFFD4')
+                check_var_time = IntVar(value=0)
+                check_var_time.set(0)
+                check9 = Radiobutton(data_time_window, text="HH-MM-SS", variable=check_var_time, value=0)
+                check9.place(x=10, y=30)
+                check10 = Radiobutton(data_time_window, text="HH:MM:SS", variable=check_var_time, value=1)
+                check10.place(x=10, y=50)
+                check11 = Radiobutton(data_time_window, text="HH-MM", variable=check_var_time, value=2)
+                check11.place(x=10, y=70)
+                check12 = Radiobutton(data_time_window, text="HH:MM", variable=check_var_time, value=3)
+                check12.place(x=10, y=90)
+                button_apply = Button(data_time_window, text="Применить вид дата/время", width=22, height=1,
+                                      command=apply_date_time, font='times 11')
+                button_apply.place(x=100, y=130, anchor="c")
+            mainloop()
 
-                mainloop()
+        def search_parameter_no_standard_string(input_parameter, input_type):
+            global tmp_code, tmp_fmt_parameter, parameter_choice
+            code_type = code_type_menu.get(input_type)
+            if code_type == '%ls':
+                tmp_code = input_parameter
+                tmp_fmt_parameter = "{%s}" % input_parameter + "%ls"
+            else:
+                tmp_code = input_parameter + '|' + code_type
+                if code_type == "t_curr":
+                    tmp_fmt_parameter = "{%s}" % input_parameter + "%.2f"
+                elif code_type == "t_qty":
+                    tmp_fmt_parameter = "{%s}" % input_parameter + "%.3f"
+                elif code_type == "t_datetime":
+                    date_time_checkbox('data_time')
+                elif code_type == "t_date":
+                    date_time_checkbox('date')
+                elif code_type == "t_time":
+                    date_time_checkbox('time')
+            option_entry.delete(0, END)
 
+        def search_parameter_standard_string(input_parameter):
+
+            global tmp_code, tmp_fmt_parameter, parameter_choice
             list_fmt_d = ('#002', '#003', '#004', '#005', '#021', '#022')
-            list_fmt_parameter_d = {'#002': '№ КСА в СКНО:%d', '#003': 'УНП:%d', '#004': '№ Регистрации: %d',
+            list_fmt_parameter_d = {'#002': 'Рег.№ КСА в СКНО:%d', '#003': 'УНП:%d', '#004': '№ Регистрации: %d',
                                     '#005': 'Количество перерег.: %d', '#021': '№ Отчета из БЭП: %d',
                                     '#022': '№ Смены: %d'}
             list_fmt_u = '#001'
-            list_fmt_parameter_u = {'#001': 'Рег.№ КСА:%u'}
+            list_fmt_parameter_u = {'#001': 'Серийный № КСА(БУ) :%u'}
             list_fmt_s = '#020'
             list_fmt_parameter_s = {'#020': 'UID СКНО:%s'}
             list_fmt_f = ('#030', '#031', '#032', '#033', '#034', '#035')
@@ -424,7 +529,7 @@ def add_string():
             elif tmp_code in list_fmt_f:
                 tmp_fmt_parameter = list_fmt_parameter_f.get(tmp_code)
             elif tmp_code in list_fmt_structure_tm:
-                date_time_checkbox()
+                date_time_checkbox('data_time')
 
         if flag == 0:
             select_standard = standard_option_select.get()
@@ -449,87 +554,40 @@ def add_string():
     def new_no_std_str():
         new_add(1)
 
-    def add_entry():
-        global tmp_fmt_parameter, var_line, var_list, list_no_standard_type
-        fmt_line = ''
-        fmt_parameter_list = []
-        real_list.clear()
-        select = entry_selection.get()
-        type_select = no_standard_type_select.get()
-        list_option_select.append(select)
-        listbox_option_select.delete(0, END)
-        for item in list_option_select:
-            if len(list_option_select) == 1:
-                listbox_option_select.insert(END, item)
-                real_list.append(item)
-                code_type = code_type_menu.get(type_select)
-                if code_type == '%ls':
-                    var_line = select
-                    fmt_line = "{%s}" % item + "%ls"
-                    var_list.append(var_line)
-                else:
-                    var_line = select + '|' + code_type
-                    var_list.append(var_line)
-                    if code_type == "t_curr":
-                        fmt_line = "{%s}" % item + "%.2f"
-                    elif code_type == "t_qty":
-                        fmt_line = "{%s}" % item + "%.3f"
-                list_no_standard_type.append(var_line)
-            else:
-                listbox_option_select.insert(END, item)
-                real_list.append(item)
-                code_type = code_type_menu.get(type_select)
-                if item not in code_options:
-                    if code_type == '%ls':
-                        var_line = select
-                        fmt_line = "{%s}" % item + "%ls"
-                    else:
-                        var_line = select + '|' + code_type
-                        if code_type == "t_curr":
-                            fmt_line = "{%s}" % select + "%.2f"
-                        elif code_type == "t_qty":
-                            fmt_line = "{%s}" % select + "%.3f"
-                    if var_line not in var_list:
-                            var_list.append(var_line)
-                    if var_line not in list_no_standard_type:
-                        list_no_standard_type.append(var_line)
-        if len(list_option_select) == 1:
-            tmp_fmt_parameter = fmt_line
-        elif len(list_option_select) == 2:
-            if type(tmp_fmt_parameter) is list:
-                tmp_fmt_parameter.append(fmt_line)
-            else:
-                fmt_parameter_list.append(tmp_fmt_parameter)
-                fmt_parameter_list.append(fmt_line)
-                tmp_fmt_parameter = fmt_parameter_list
-        elif len(list_option_select) > 2:
-            tmp_fmt_parameter.append(fmt_line)
-
     def del_select():
-        global real_list
+        global real_list, fmt_parameter, code_line
         select = list(listbox_option_select.curselection())
         select.reverse()
         for i in select:
             listbox_option_select.delete(i)
             del list_option_select[i]
+            del fmt_parameter[i]
+            del code_line[i]
+
         real_list = list(listbox_option_select.get(0, END))
 
     def clear_list():
+        global fmt_parameter, code_line
+        fmt_parameter.clear()
+        code_line.clear()
         listbox_option_select.delete(0, END)
         list_option_select.clear()
 
     def move_up():
+        global fmt_parameter, code_line
         idxs = listbox_option_select.curselection()
         if not idxs:
             return
         for pos in idxs:
-            if pos == 0:
-                continue
-            text = listbox_option_select.get(pos)
-            listbox_option_select.delete(pos)
-            listbox_option_select.insert(pos - 1, text)
+            if pos != 0:
+                text = listbox_option_select.get(pos)
+                listbox_option_select.delete(pos)
+                listbox_option_select.insert(pos - 1, text)
+                fmt_parameter[pos], fmt_parameter[pos - 1] = fmt_parameter[pos - 1], fmt_parameter[pos]
+                code_line[pos], code_line[pos - 1] = code_line[pos - 1], code_line[pos]
 
     def move_down():
+        global fmt_parameter, code_line
         idxs = listbox_option_select.curselection()
         if not idxs:
             return
@@ -537,12 +595,14 @@ def add_string():
             text = listbox_option_select.get(pos)
             listbox_option_select.delete(pos)
             listbox_option_select.insert(pos + 1, text)
+            fmt_parameter[pos], fmt_parameter[pos + 1] = fmt_parameter[pos + 1], fmt_parameter[pos]
+            code_line[pos], code_line[pos + 1] = code_line[pos + 1], code_line[pos]
 
     real_list = []
     entry_selection = StringVar()
     string_window = Toplevel()
     string_window.title("Добавление строки в шаблон")
-    string_window.geometry("850x550")
+    string_window.geometry("620x550")
     string_window.config(bg='#E6E6FA')
     standard_option_select = StringVar(string_window)
     standard_option_select.set(list_options_menu.get(0))
@@ -551,7 +611,7 @@ def add_string():
     label_menu.config(bg='#e7f236')
     option_menu = OptionMenu(string_window, standard_option_select, *list_options_menu.values())
     option_menu.grid(column=2, row=1)
-    option_menu.config(width=50, height=1)
+    option_menu.config(width=50, height=1, relief=GROOVE, activebackground='light blue')
     no_standard_type_select = StringVar(string_window)
     no_standard_type_select.set(list_type_menu.get(0))
     label_menu_type = Label(string_window, text='Типы не стандартных:', height=1, width=18, font='times 11',
@@ -560,8 +620,9 @@ def add_string():
     label_menu_type.config(bg='#e7f236')
     option_menu_type = OptionMenu(string_window, no_standard_type_select, *list_type_menu.values())
     option_menu_type.grid(column=2, row=3)
-    option_menu_type.config(width=50, height=1)
-    button_menu = Button(string_window, width=10, height=1, text="Добавить", command=new_std_str)
+    option_menu_type.config(width=50, height=1, relief=GROOVE, activebackground='light blue')
+    button_menu = Button(string_window, width=10, height=1, text="Добавить", command=new_std_str,
+                         relief=GROOVE, activebackground='light blue')
     button_menu.grid(column=3, row=1)
     label_entry = Label(string_window, text='Не стандартные :', height=1, width=18, font='times 11', relief=GROOVE)
     label_entry.grid(column=1, row=2)
@@ -569,7 +630,8 @@ def add_string():
     option_entry = Entry(string_window, textvariable=entry_selection)
     option_entry.grid(column=2, row=2)
     option_entry.config(width=55)
-    button_entry = Button(string_window, width=10, height=1, text="Добавить", command=new_no_std_str)
+    button_entry = Button(string_window, width=10, height=1, text="Добавить", command=new_no_std_str,
+                          relief=GROOVE, activebackground='light blue')
     button_entry.grid(column=3, row=2)
     listbox_option_select = Listbox(string_window, width=55, height=15, font=('times', 12), selectbackground='BLUE')
     listbox_option_select.place(x=50, y=200)
@@ -577,23 +639,59 @@ def add_string():
                                 relief=RIDGE)
     label_option_select.place(x=165, y=175)
     label_option_select.config(bg='#7FFFD4')
-    del_element_button = Button(string_window, width=15, height=1, text="Удалить элемент", command=del_select)
+    del_element_button = Button(string_window, width=15, height=1, text="Удалить элемент", command=del_select,
+                                relief=GROOVE, activebackground='light blue')
     del_element_button.place(x=135, y=510)
-    clear_button = Button(string_window, width=15, height=1, text="Очистить список", command=clear_list)
+    clear_button = Button(string_window, width=15, height=1, text="Очистить список", command=clear_list,
+                          relief=GROOVE, activebackground='light blue')
     clear_button.place(x=275, y=510)
-    move_up__button = Button(string_window, width=3, height=1, text="▲", command=move_up)
+    move_up__button = Button(string_window, width=3, height=1, text="▲", command=move_up,
+                             relief=GROOVE, activebackground='light blue')
     move_up__button.place(x=505, y=230)
-    move_down__button = Button(string_window, width=3, height=1, text="▼", command=move_down)
+    move_down__button = Button(string_window, width=3, height=1, text="▼", command=move_down,
+                               relief=GROOVE, activebackground='light blue')
     move_down__button.place(x=505, y=270)
-    apply_form = Button(string_window, text="Apply", width=5, height=1, command=new_apply_string, font='times 11')
-    apply_form.place(relx=0.8, rely=0.9, anchor="c")
+    apply_form = Button(string_window, text="Apply", width=7, command=new_apply_string, font='times 11',
+                        relief=GROOVE, activebackground='light blue')
+    apply_form.place(relx=0.93, rely=0.95, anchor="c")
 
     mainloop()
 
 
+def save_global_text():
+    try:
+        temp_line = listbox.get(1.0, END)
+        text_dict = eval(temp_line)
+        finish_file = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
+        file = asksaveasfile(defaultextension=".json")
+        file.write(finish_file)
+    except Exception as err:
+        messagebox.showwarning('Ошибка при сохранении файла', 'str(%s)' % err)
+
+
+def send_printer():
+    global port, finish
+    temp_line = listbox.get(1.0, END)
+    text_dict = []
+    finish_view = {}
+    data_dict = []
+    text_dict = eval(temp_line)
+    new_form = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
+    core = 10001
+    message = '{"id": 107, "data": {"preview": false, "docPrintTemplate": %s}}' % new_form
+    try:
+        port = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        port.connect((str(ip_entry_socket), core))
+        port.send(message.encode())
+    except Exception as er:
+        messagebox.showwarning('Error', 'Ошибка при отправке на печать \n\n%s' % er)
+    finally:
+        port.close()
+
+
 root = Tk()
 root.title("Build Form")
-root.wm_geometry("%dx%d+%d+%d" % (1200, 650, 0, 0))
+root.wm_geometry("%dx%d+%d+%d" % (1300, 650, 0, 0))
 frame = ttk.Frame(root, padding=(7, 7, 11, 11))
 frame.grid(column=0, row=0, sticky=(N, S, E, W))
 ip_label = Label(root, text='IP для запроса:', width=12, height=1, font='times 11', relief=GROOVE)
@@ -602,29 +700,46 @@ ip_label.config(bg='#e7f236')
 ip_address = StringVar()
 ip_entry = Entry(root, textvariable=ip_address)
 ip_entry.place(x=112, y=37)
-btn_info = ttk.Button(frame, text="Создать шаблон", command=create_form)
+btn_info = Button(frame, text="Создать шаблон", command=create_form,  relief=GROOVE, activebackground='light blue')
 btn_info.grid(column=2, row=1)
-btn_trade = ttk.Button(frame, text="Добавить строку", command=add_string)
+btn_info.config(width=13)
+btn_trade = Button(frame, text="Добавить строку", command=add_string,  relief=GROOVE, activebackground='light blue')
 btn_trade.grid(column=5, row=1)
-btn_master = ttk.Button(frame, text='Выбор настроек', command=settings_change)
+btn_trade.config(width=13)
+btn_master = Button(frame, text='Выбор настроек', command=settings_change, relief=GROOVE, activebackground='light blue')
 btn_master.grid(column=6, row=1)
-btn_close = ttk.Button(frame, command=select_close, text='Exit')
+btn_master.config(width=13)
+btn_close = Button(frame, command=select_close, text='Exit', relief=GROOVE,
+                   activeforeground='white', activebackground='#b20101')
 btn_close.grid(column=9, row=1)
-apply = ttk.Button(root, text="apply", command=apply_global_text)
-apply.place(relx=0.035, rely=0.95, anchor="c")
-label_paper_width = Label(frame, text="Бумага не выбрана", width=23, height=1, font='times 11', relief=GROOVE)
+btn_close.config(width=11)
+apply = Button(root, text="Apply", command=apply_global_text, activebackground='light blue', relief=GROOVE, fg="black",
+               font='times 11')
+apply.place(relx=0.05, rely=0.96, anchor="c")
+apply.config(width=12)
+save = Button(root, text="Save file", command=save_global_text, activebackground='light blue', relief=GROOVE,
+              fg="black", font='times 11')
+save.place(relx=0.95, rely=0.96, anchor="c")
+save.config(width=12)
+printer = Button(root, text="Print", command=send_printer, activebackground='light blue', relief=GROOVE,
+                 fg="black", font='times 11')
+printer.place(relx=0.86, rely=0.96, anchor="c")
+printer.config(width=12)
+label_paper_width = Label(frame, text="Бумага не выбрана", width=23, height=1, font='times 12', relief=GROOVE)
 label_paper_width.grid(column=10, row=1)
-label_paper_width.config(bg='#FF0000')
-label_symbol_glob = Label(frame, text="Кол-во знаков не выбрано", width=23, height=1, font='times 11', relief=GROOVE)
+label_paper_width.config(bg='#e84343')
+label_symbol_glob = Label(frame, text="Кол-во знаков не выбрано", width=23, height=1, font='times 12', relief=GROOVE)
 label_symbol_glob.grid(column=11, row=1)
-label_symbol_glob.config(bg='#FF0000')
-listbox = Text(root, width=70, height=24, font=('times', 12), selectbackground='BLUE')
+label_symbol_glob.config(bg='#e84343')
+listbox = Text(root, width=96, height=29, font=('Courier', 11), selectbackground='light blue')
 listbox.place(x=5, y=65)
 edit_menu = Menu(listbox, tearoff=0)
 edit_menu.add_command(label="Cut", accelerator="Ctrl+X", command=lambda: listbox.event_generate('<<Cut>>'))
 edit_menu.add_command(label="Copy", accelerator="Ctrl+C", command=lambda: listbox.event_generate('<<Copy>>'))
 edit_menu.add_command(label="Paste", accelerator="Ctrl+V", command=lambda: listbox.event_generate('<<Paste>>'))
 listbox.bind("<Button-3>", lambda event: edit_menu.post(event.x_root, event.y_root))
-listbox2 = Listbox(root, width=70, height=24, font=('times', 12), selectbackground='BLUE')
-listbox2.place(x=600, y=65)
+listbox2 = Listbox(root, width=45, height=28, font=('Courier', 11), selectbackground='BLUE')
+listbox2.place(x=880, y=64)
+
+
 root.mainloop()
