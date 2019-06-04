@@ -13,6 +13,9 @@ new_form = ''
 ip_entry_socket = ''
 code_line = []
 fmt_parameter = []
+example_text = []
+no_type_string = []
+checkpoint = 0
 
 setting_file = (os.getcwd() + '/Settings.txt')
 doctype_list = {'1': '-чек продажи', '2': '-чек возврата', '3': '-чек анулирования', '4': '-новый'}
@@ -118,7 +121,7 @@ def create_form():
 
 
 def apply_global_text():
-    global new_form, ip_address, ip_entry_socket, finish
+    global new_form, ip_address, ip_entry_socket, finish, checkpoint, example_text, no_type_string
     # ip_entry_socket = ip_address.get()
     ip_entry_socket = '10.10.11.226'
     listbox2.delete(0, END)
@@ -129,13 +132,20 @@ def apply_global_text():
     text_dict = eval(temp_line)
     new_form = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
     core = 10001
-    message = '{"id": 107, "data": {"preview": "true", "docPrintTemplate": %s}}' % new_form
-    # message = '{"id": 107, "data": {"preview": "true", "docPrintTemplate": %s, "number":"123456"}}' % new_form
+    if checkpoint == 1:
+        message = {"id": 107, "data": {"preview": "true", "docPrintTemplate": text_dict}}
+        data_dict = message.get('data')
+        size_example = len(no_type_string)
+        for item in range(size_example):
+            data_dict.update({no_type_string[item]: example_text[item]})
+        message.update(data_dict)
+    else:
+        message = '{"id": 107, "data": {"preview": "true", "docPrintTemplate": %s}}' % new_form
     try:
         global port
         port = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         port.connect((str(ip_entry_socket), core))
-        port.send(message.encode())
+        port.send(str(message).encode())
         data = port.recv(10000).decode()
         data_dict = eval(data)
         finish = data_dict.get('data')
@@ -278,7 +288,8 @@ def settings_change():
 
 
 def add_string():
-    global tmp_fmt_parameter, var_list, var_line, fmt_list, list_no_standard_type
+    global tmp_fmt_parameter, var_list, var_line, fmt_list, list_no_standard_type, checkpoint,\
+        example_text, no_type_string
     var_line = ''
     var_list = []
     fmt_list = []
@@ -340,7 +351,7 @@ def add_string():
 
     def new_add(flag):
 
-        global tmp_code, tmp_fmt_parameter, code_line, fmt_parameter
+        global tmp_code, tmp_fmt_parameter, code_line, fmt_parameter, checkpoint, example_text, no_type_string
         tmp_code = ''
         tmp_fmt_parameter = ''
         select = ''
@@ -482,12 +493,48 @@ def add_string():
                 button_apply.place(x=100, y=130, anchor="c")
             mainloop()
 
+        def no_std_name(name):
+            global no_type_string, example_text, checkpoint
+
+            def exit_setting():
+                try:
+                    window.destroy()
+                except Exception as err:
+                    messagebox.showwarning('Ошибка при закрытии программы', 'str(%s)' % err)
+
+            def update_parameters():
+                global example_text, checkpoint
+                checkpoint = 1
+                example = message.get()
+                example_text.append(example)
+                window.destroy()
+
+            checkpoint = 0
+            no_type_string.append(name)
+            message = StringVar()
+            window = Toplevel()
+            window.title("Выбрать параметры шаблона")
+            window.geometry("360x200")
+            name_entry = Entry(window, textvariable=message)
+            name_entry.grid(column=1, row=2)
+            name_entry.config(width=35)
+            label_name = Label(window, text="Введите примерный текст который будет \nотображаться для параметра: %s"
+                                            % no_type_string, width=35, height=2, font='times 11', relief=GROOVE)
+            label_name.grid(column=1, row=1)
+            btn_cancel = Button(window, text="Cancel", command=exit_setting, width=5, height=1, font='times 11',
+                                relief=GROOVE, activebackground='light blue')
+            btn_cancel.place(relx=0.9, rely=0.9, anchor="c")
+            apply_string = Button(window, text="Apply", width=5, height=1, command=update_parameters, font='times 11',
+                                  relief=GROOVE, activebackground='light blue')
+            apply_string.place(relx=0.75, rely=0.9, anchor="c")
+
         def search_parameter_no_standard_string(input_parameter, input_type):
             global tmp_code, tmp_fmt_parameter, parameter_choice
             code_type = code_type_menu.get(input_type)
             if code_type == '%ls':
                 tmp_code = input_parameter
                 tmp_fmt_parameter = "{%s}" % input_parameter + "%ls"
+                no_std_name(input_parameter)
             else:
                 tmp_code = input_parameter + '|' + code_type
                 if code_type == "t_curr":
