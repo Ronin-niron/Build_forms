@@ -767,11 +767,11 @@ def send_printer():
             data_100 = port.recv(10000).decode()
             port.send(massage.encode())
             data = port.recv(10000).decode()
-            if data_100.find('"status":0') == -1:
+            if re.search(data_100, '"status":2'):
                 raise Exception
         except Exception as er:
             messagebox.showwarning('Error', 'Ошибка при отправке на печать.\nВозможно не включен принтер\n'
-                                            '\nОтвет на запрос {"id": 100}:\n%s\n%s' % (er, data))
+                                            '\nОтвет на запрос:\n%s\n%s\n%s' % (er, data, data_100))
         finally:
             port.close()
     else:
