@@ -7,6 +7,7 @@ from tkinter import ttk, messagebox
 from tkinter.filedialog import asksaveasfile
 import gc
 import ast
+import re
 
 new_form = ''
 ip_entry_socket = ''
@@ -125,6 +126,8 @@ def apply_global_text():
             text_dict = {}
             finish_view = {}
             data_dict = []
+            if temp_line.find("null"):
+                temp_line = re.sub("null", "None", temp_line)
             text_dict = eval(temp_line)
             new_form = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
             core = 10001
@@ -727,13 +730,14 @@ def save_global_text():
         check = 0
         try:
             if temp_line is not '\n' or None:
+                if temp_line.find("null"):
+                    temp_line = re.sub("null", "None", temp_line)
                 text_dict = eval(temp_line)
                 finish_file = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
                 file = asksaveasfile(defaultextension=".json")
-                # r = open(file, 'w', encoding="windows-1251")
-                #file.write(finish_file)
-                file.write(message)
-                file.close()
+                if file:
+                    file.write(message)
+                    file.close()
             else:
                 check = 1
                 raise Exception
@@ -748,6 +752,8 @@ def send_printer():
     global port, finish
     temp_line = listbox.get(1.0, END)
     if not temp_line == '\n':
+        if temp_line.find("null"):
+            temp_line = re.sub("null", "None", temp_line)
         data = ''
         text_dict = eval(temp_line)
         last_form = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
@@ -796,6 +802,8 @@ def get_view_json():
 
     temp_line = listbox.get(1.0, END)
     if not temp_line == '\n':
+        if temp_line.find("null"):
+            temp_line = re.sub("null", "None", temp_line)
         text_dict = eval(temp_line)
         new_form = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
         if checkpoint == 1:
