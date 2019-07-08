@@ -5,10 +5,9 @@ import socket
 from tkinter import *
 from tkinter import ttk, messagebox
 from tkinter.filedialog import asksaveasfile
+import gc
+import ast
 
-result_symbol = 'не задан'
-result_message = 'не задан'
-type_selection = 'не задан'
 new_form = ''
 ip_entry_socket = ''
 code_line = []
@@ -16,17 +15,18 @@ fmt_parameter = []
 example_text = []
 no_type_string = []
 checkpoint = 0
-
 setting_file = (os.getcwd() + '/Settings.txt')
-doctype_list = {'1': '-чек продажи', '2': '-чек возврата', '3': '-чек анулирования', '4': '-новый'}
+message = ''
+flag_for_save_json = 0
 
 
 def select_close():
     try:
         line = listbox.get(1.0, END)
         if line is not '\n':
-            answer = messagebox.askyesno('Возможно будут утеряны даннные', 'Форма не пуста, Вы уверены, '
-                                                                           'что шаблон сохранен?\nЗакрыть программу?')
+            answer = messagebox.askyesno('Возможно будут утеряны даннные', 'Форма не пуста, '
+                                                                           'не забудьте сохранить шаблон.'
+                                                                           '\nЗакрыть программу?')
             if answer:
                 sys.exit()
         else:
@@ -36,7 +36,7 @@ def select_close():
 
 
 def create_form():
-    global create, result_symbol, result_message
+    global create, message, no_type_string, checkpoint
     list_locale = {0: 'Locale - RU', 1: 'Locale - EN', 2: 'Locale - BY'}
     value_locate = {'Locale - EN': "en_EN.UTF-8", 'Locale - RU': "ru_RU.UTF-8", 'Locale - BY': "be_BY.UTF-8"}
 
@@ -47,34 +47,27 @@ def create_form():
             messagebox.showwarning('Ошибка при закрытии программы', 'str(%s)' % err)
 
     def update_parameters():
-        global tmp_line, json_insert, json_settings, lines_dict
+        global tmp_line, json_insert, json_settings, lines_dict, checkpoint, message
+        check = 0
         try:
             line = listbox.get(1.0, END)
             if line is not '\n' or None:
-                answer = messagebox.askyesno('Возможно будут утеряны даннные', 'Форма не пуста, Вы уверены,'
-                                                                               ' что шаблон сохранен?\n'
-                                                                               'Очистить форму и создать новый?')
+                answer = messagebox.askyesno('Возможно будут утеряны даннные', 'Форма не пуста.\n'
+                                                                               'Очистить форму и создать новый шаблон?')
                 if not answer:
+                    check = 1
                     raise Exception
+            gc.collect()  # clear memory
             listbox.delete(1.0, END)
+            listbox2.delete(0, END)
+            checkpoint = 0
+            message = ''
             result_signs = mess_symbol.get()
-            result_signs = 80
             if result_signs == 0 or result_signs > 80:
                 messagebox.showwarning('Error', 'Количество знаков в строке не должно быть 0 или больше 80')
-            else:
-                number_of_signs = Label(frame, text="Кол-во знаков " + str(result_signs), width=23, height=1,
-                                        font='times 12', relief=GROOVE)
-                number_of_signs.grid(column=11, row=1)
-                number_of_signs.config(bg='#e7f236')
-            result_paper = message.get()
-            result_paper = 80
+            result_paper = message_paper.get()
             if result_paper == 0 or result_paper > 80:
                 messagebox.showinfo('Error', 'Ширина бумаги не должна быть 0 или больше 80')
-            else:
-                paper_width = Label(frame, text="Ширина бумаги " + str(result_paper), width=23, height=1, font='times 12',
-                                    relief=GROOVE)
-                paper_width.grid(column=10, row=1)
-                paper_width.config(bg='#e7f236')
             lines_dict = []
             select = locale_select.get()
             locale = value_locate.get(select)
@@ -84,9 +77,10 @@ def create_form():
             tmp_line = listbox.get(1.0, END)
             create.destroy()
         except Exception as err:
-            messagebox.showwarning('Ошибка при добавлении', 'str(%s)' % err)
+            if check == 0:
+                messagebox.showwarning('Ошибка при добавлении', 'str(%s)' % err)
 
-    message = IntVar()
+    message_paper = IntVar()
     mess_symbol = IntVar()
     create = Toplevel()
     create.title("Выбрать параметры шаблона")
@@ -94,7 +88,7 @@ def create_form():
     lab = Label(create, text="", width=50,
                 height=10, font=('times', 12))
     lab.place(relx=.5, rely=.3, anchor="n")
-    paper_entry = Entry(create, textvariable=message)
+    paper_entry = Entry(create, textvariable=message_paper)
     paper_entry.grid(column=2, row=1)
     paper_entry.config(width=28)
     label_paper = Label(create, text="Ширина бумаги 1-80", width=22, height=1, font='times 11', relief=GROOVE)
@@ -106,12 +100,12 @@ def create_form():
     symbol_entry = Entry(create, textvariable=mess_symbol)
     symbol_entry.grid(column=2, row=2)
     symbol_entry.config(width=28)
-    btn_cancel = Button(create, text="Cancel", command=exit_setting, width=5, height=1, font='times 11',
+    btn_cancel = Button(create, text="Закрыть", command=exit_setting, width=8, height=1, font='times 11',
                         relief=GROOVE, activebackground='light blue')
-    btn_cancel.place(relx=0.9, rely=0.9, anchor="c")
-    apply_form = Button(create, text="Apply", width=5, height=1, command=update_parameters, font='times 11',
+    btn_cancel.place(relx=0.85, rely=0.9, anchor="c")
+    apply_form = Button(create, text="Применить", width=9, height=1, command=update_parameters, font='times 11',
                         relief=GROOVE, activebackground='light blue')
-    apply_form.place(relx=0.75, rely=0.9, anchor="c")
+    apply_form.place(relx=0.6, rely=0.9, anchor="c")
     locale_select = StringVar(root)
     locale_select.set(list_locale.get(0))
     locale_menu = OptionMenu(create, locale_select, *list_locale.values())
@@ -121,52 +115,63 @@ def create_form():
 
 
 def apply_global_text():
-    global new_form, ip_address, ip_entry_socket, finish, checkpoint, example_text, no_type_string
-    # ip_entry_socket = ip_address.get()
-    ip_entry_socket = '10.10.11.226'
-    listbox2.delete(0, END)
+    global new_form, ip_address, ip_entry_socket, finish, checkpoint, example_text,\
+        no_type_string, message, flag_for_save_json
+    ip_entry_socket = ip_address.get()
     temp_line = listbox.get(1.0, END)
-    text_dict = []
-    finish_view = {}
-    data_dict = []
-    text_dict = eval(temp_line)
-    new_form = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
-    core = 10001
-    if checkpoint == 1:
-        message = {"id": 107, "data": {"preview": "true", "docPrintTemplate": text_dict}}
-        data_dict = message.get('data')
-        size_example = len(no_type_string)
-        for item in range(size_example):
-            data_dict.update({no_type_string[item]: example_text[item]})
-        message.update(data_dict)
-    else:
-        message = '{"id": 107, "data": {"preview": "true", "docPrintTemplate": %s}}' % new_form
     try:
-        global port
-        port = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        port.connect((str(ip_entry_socket), core))
-        port.send(str(message).encode())
-        data = port.recv(10000).decode()
-        data_dict = eval(data)
-        finish = data_dict.get('data')
-        if finish is None:
-            port.close()
+        if not ip_entry_socket == '' or not temp_line == '\n':
             listbox2.delete(0, END)
-            errcode = data_dict.get('errCode')
-            errmsg = data_dict.get('errMsg')
-            finish_view = [str(data_dict), 'errCode = ' + str(errcode), 'errMsg = ' + str(errmsg)]
-            for line in finish_view:
-                listbox2.insert(END, line)
+            text_dict = {}
+            finish_view = {}
+            data_dict = []
+            text_dict = eval(temp_line)
+            new_form = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
+            core = 10001
+            if checkpoint == 1:
+                if flag_for_save_json == 0:
+                    message = {"id": 107, "data": {"preview": "true", "docPrintTemplate": text_dict}}
+                elif flag_for_save_json == 1:
+                    message_dict = {}
+                    message_dict = ast.literal_eval(message)
+                    message = message_dict
+                data_dict = message.get('data')
+                size_example = len(no_type_string)
+                for item in range(size_example):
+                    data_dict.update({no_type_string[item]: example_text[item]})
+                message.update(data_dict)
+            else:
+                message = '{"id": 107, "data": {"preview": "true", "docPrintTemplate": %s}}' % new_form
+            try:
+                global port
+                port = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                port.connect((str(ip_entry_socket), core))
+                port.send(str(message).encode())
+                data = port.recv(10000).decode()
+                data_dict = eval(data)
+                finish = data_dict.get('data')
+                if finish is None:
+                    port.close()
+                    listbox2.delete(0, END)
+                    errcode = data_dict.get('errCode')
+                    errmsg = data_dict.get('errMsg')
+                    finish_view = [str(data_dict), 'errCode = ' + str(errcode), 'errMsg = ' + str(errmsg)]
+                    for line in finish_view:
+                        listbox2.insert(END, line)
+                else:
+                    finish_view = finish.get('docText')
+                    listbox2.delete(0, END)
+                    for line in finish_view:
+                        listbox2.insert(END, line)
+                    port.close()
+            except Exception as er:
+                messagebox.showwarning('Error', 'Ошибка при подключении \n\n%s' % er)
+            finally:
+                port.close()
         else:
-            finish_view = finish.get('docText')
-            listbox2.delete(0, END)
-            for line in finish_view:
-                listbox2.insert(END, line)
-            port.close()
+            messagebox.showwarning('Error', 'Вы не создали шаблон или не ввели адрес в поле: \n"IP для запроса" \n')
     except Exception as er:
-        messagebox.showwarning('Error', 'Ошибка при подключении \n\n%s' % er)
-    finally:
-        port.close()
+        messagebox.showwarning('Error', 'Ошибка !!! \n\n%s' % er)
 
 
 def settings_change():
@@ -196,8 +201,6 @@ def settings_change():
                                 ["aSendRawData", "1B2500"], ["aSendRawData", "1B2501"], ["aSendRawData", "1B4A40"])
             place_dict = -1
             settings_parameter = []
-
-            line = listbox.get(1.0, END)
             for choice in check_value_list:
                 place_dict += 1
                 if choice:
@@ -205,7 +208,6 @@ def settings_change():
                     settings_parameter.append(insert_check_dict)
             text = listbox.get(1.0, END)
             if text is not "\n" or '':
-                text_dict = []
                 text_dict = eval(text)
                 if type(text_dict) is dict:
                     line_settings = {"settings": settings_parameter}
@@ -240,11 +242,13 @@ def settings_change():
         check3.place(relx=0.1, rely=0.3, anchor=W)
         check_var4 = BooleanVar()
         check_var4.set(0)
-        check4 = Checkbutton(settings_window, text='{"pCharSize":"std_size"}', variable=check_var4, onvalue=1, offvalue=0)
+        check4 = Checkbutton(settings_window, text='{"pCharSize":"std_size"}', variable=check_var4, onvalue=1,
+                             offvalue=0)
         check4.place(relx=0.1, rely=0.4, anchor=W)
         check_var5 = BooleanVar()
         check_var5.set(0)
-        check5 = Checkbutton(settings_window, text='{"pCharSize":"dbl_height"}', variable=check_var5, onvalue=1, offvalue=0)
+        check5 = Checkbutton(settings_window, text='{"pCharSize":"dbl_height"}', variable=check_var5, onvalue=1,
+                             offvalue=0)
         check5.place(relx=0.1, rely=0.5, anchor=W)
         check_var6 = BooleanVar()
         check_var6.set(0)
@@ -258,7 +262,8 @@ def settings_change():
         check7.place(relx=0.1, rely=0.7, anchor=W)
         check_var8 = BooleanVar()
         check_var8.set(0)
-        check8 = Checkbutton(settings_window, text='["aCutPaper", "partial"]', variable=check_var8, onvalue=1, offvalue=0)
+        check8 = Checkbutton(settings_window, text='["aCutPaper", "partial"]', variable=check_var8, onvalue=1,
+                             offvalue=0)
         check8.place(relx=0.1, rely=0.8, anchor=W)
         check_var9 = BooleanVar()
         check_var9.set(0)
@@ -280,19 +285,21 @@ def settings_change():
         check12 = Checkbutton(settings_window, text='["aSendRawData", "1B4A40"]', variable=check_var12, onvalue=1,
                               offvalue=0)
         check12.place(relx=0.5, rely=0.3, anchor=W)
-        apply_form = Button(settings_window, text="Apply", width=5, height=1, command=survey_of_choice, font='times 11',
+        apply_form = Button(settings_window, text="Применить", width=9, height=1, command=survey_of_choice,
+                            font='times 11',
                             relief=GROOVE, activebackground='light blue')
-        apply_form.place(relx=0.95, rely=0.93, anchor="c")
+        apply_form.place(relx=0.92, rely=0.93, anchor="c")
     except Exception as err:
         messagebox.showwarning('Ошибка при добавлении', 'str(%s)' % err)
 
 
 def add_string():
-    global tmp_fmt_parameter, var_list, var_line, fmt_list, list_no_standard_type, checkpoint,\
-        example_text, no_type_string
+    global tmp_fmt_parameter, var_list, var_line, fmt_list, list_no_standard_type, checkpoint, \
+        example_text, no_type_string, flag_add_string
     var_line = ''
     var_list = []
     fmt_list = []
+    flag_add_string = 0
     tmp_fmt_parameter = []
     list_option_select = []
     list_no_standard_type = []
@@ -327,12 +334,12 @@ def add_string():
                     "Скидка (надбавка) на позицию в чеке продажи/возврата": "#035"}
 
     def new_apply_string():
-        global temp_string, fmt_parameter, code_line
+        global temp_string, fmt_parameter, code_line, flag_add_string
         try:
+            flag_add_string = 1
             temp_string = {"var": code_line, "fmt": fmt_parameter}
             text = listbox.get(1.0, END)
             if '"lines"' in text:
-                text_dict = []
                 text_dict = eval(text)
                 value_lines = text_dict.get("lines")
                 value_lines.append(temp_string)
@@ -363,10 +370,12 @@ def add_string():
             view = form
 
             def apply_date_time():
-                global date_time_parameter, tmp_fmt_parameter, view
-                date_parameter_decoding = {0: "%d.%m.%Y", 1: "%Y.%m.%d", 2: "%y.%m.%d", 3: "%d-%m-%y",
-                                           4: "%y-%m-%d",
-                                           5: "%d-%m-%Y", 6: "%Y-%m-%d"}
+                global date_time_parameter, tmp_fmt_parameter, view, example_text, checkpoint, no_type_string
+                tmp_data_time = '2030-01-01 10:10:10'
+                tmp_data = '2030-01-01'
+                tmp_time = '10:10:10'
+                date_parameter_decoding = {0: "%d.%m.%Y", 1: "%Y.%m.%d", 2: "%d-%m-%y",
+                                           3: "%y-%m-%d", 4: "%d-%m-%Y", 5: "%Y-%m-%d"}
                 time_parameter_decoding = {0: "%H-%M-%S", 1: "%H:%M:%S", 2: "%H-%M", 3: "%H:%M"}
                 if view == 'data_time':
                     choice_date = check_var_date.get()
@@ -375,14 +384,24 @@ def add_string():
                     time_parameter = time_parameter_decoding.get(choice_time)
                     date_time_parameter = str(date_parameter) + ' ' + str(time_parameter)
                     tmp_fmt_parameter = date_time_parameter
+                    example = option_entry.get()
+                    example_text.append(tmp_data_time)
+                    no_type_string.append(example)
                 elif view == 'date':
                     choice_date = check_var_date.get()
                     date_parameter = date_parameter_decoding.get(choice_date)
                     tmp_fmt_parameter = date_parameter
+                    example = option_entry.get()
+                    example_text.append(tmp_data)
+                    no_type_string.append(example)
                 elif view == 'time':
                     choice_time = check_var_time.get()
                     time_parameter = time_parameter_decoding.get(choice_time)
                     tmp_fmt_parameter = time_parameter
+                    example = option_entry.get()
+                    example_text.append(tmp_time)
+                    no_type_string.append(example)
+                checkpoint = 1
                 code_line.append(tmp_code)
                 fmt_parameter.append(tmp_fmt_parameter)
                 list_option_select.append(select)
@@ -408,18 +427,14 @@ def add_string():
                 check1.place(x=10, y=40)
                 check2 = Radiobutton(data_time_window, text="yyyy.mm.dd", variable=check_var_date, value=1)
                 check2.place(x=10, y=60)
-                check3 = Radiobutton(data_time_window, text="dd.mm.yy", variable=check_var_date, value=2)
+                check3 = Radiobutton(data_time_window, text="dd-mm-yy", variable=check_var_date, value=2)
                 check3.place(x=10, y=80)
-                check4 = Radiobutton(data_time_window, text="yy.mm.dd", variable=check_var_date, value=3)
+                check4 = Radiobutton(data_time_window, text="yy-mm-dd", variable=check_var_date, value=3)
                 check4.place(x=10, y=100)
-                check5 = Radiobutton(data_time_window, text="dd-mm-yy", variable=check_var_date, value=4)
+                check5 = Radiobutton(data_time_window, text="dd-mm-yyyy", variable=check_var_date, value=4)
                 check5.place(x=10, y=120)
-                check6 = Radiobutton(data_time_window, text="yy-mm-dd", variable=check_var_date, value=5)
-                check6.place(x=10, y=140)
-                check7 = Radiobutton(data_time_window, text="dd-mm-yyyy", variable=check_var_date, value=6)
-                check7.place(x=10, y=160)
-                check8 = Radiobutton(data_time_window, text="yyyy-mm-dd", variable=check_var_date, value=7)
-                check8.place(x=10, y=180)
+                check6 = Radiobutton(data_time_window, text="yyyy-mm-dd", variable=check_var_date, value=5)
+                check6.place(x=10, y=120)
                 label_time = Label(data_time_window, text="Time Parameter", height=1, width=14, font='times 10',
                                    relief=GROOVE)
                 label_time.place(x=10, y=210)
@@ -500,33 +515,33 @@ def add_string():
                 try:
                     window.destroy()
                 except Exception as err:
-                    messagebox.showwarning('Ошибка при закрытии программы', 'str(%s)' % err)
+                    messagebox.showwarning('Ошибка при закрытии окна', '%s' % err)
 
             def update_parameters():
                 global example_text, checkpoint
                 checkpoint = 1
-                example = message.get()
+                example = message_name_entry.get()
                 example_text.append(example)
                 window.destroy()
 
             checkpoint = 0
             no_type_string.append(name)
-            message = StringVar()
+            message_name_entry = StringVar()
             window = Toplevel()
             window.title("Выбрать параметры шаблона")
-            window.geometry("360x200")
-            name_entry = Entry(window, textvariable=message)
+            window.geometry("287x200")
+            name_entry = Entry(window, textvariable=message_name_entry)
             name_entry.grid(column=1, row=2)
             name_entry.config(width=35)
             label_name = Label(window, text="Введите примерный текст который будет \nотображаться для параметра: %s"
-                                            % no_type_string, width=35, height=2, font='times 11', relief=GROOVE)
+                                            % no_type_string[-1], width=35, height=2, font='times 11', relief=GROOVE)
             label_name.grid(column=1, row=1)
-            btn_cancel = Button(window, text="Cancel", command=exit_setting, width=5, height=1, font='times 11',
+            btn_cancel = Button(window, text="Закрыть", command=exit_setting, width=8, height=1, font='times 11',
                                 relief=GROOVE, activebackground='light blue')
-            btn_cancel.place(relx=0.9, rely=0.9, anchor="c")
-            apply_string = Button(window, text="Apply", width=5, height=1, command=update_parameters, font='times 11',
-                                  relief=GROOVE, activebackground='light blue')
-            apply_string.place(relx=0.75, rely=0.9, anchor="c")
+            btn_cancel.place(relx=0.85, rely=0.9, anchor="c")
+            apply_string = Button(window, text="Применить", width=9, height=1, command=update_parameters,
+                                  font='times 11', relief=GROOVE, activebackground='light blue')
+            apply_string.place(relx=0.57, rely=0.9, anchor="c")
 
         def search_parameter_no_standard_string(input_parameter, input_type):
             global tmp_code, tmp_fmt_parameter, parameter_choice
@@ -698,95 +713,189 @@ def add_string():
     move_down__button = Button(string_window, width=3, height=1, text="▼", command=move_down,
                                relief=GROOVE, activebackground='light blue')
     move_down__button.place(x=505, y=270)
-    apply_form = Button(string_window, text="Apply", width=7, command=new_apply_string, font='times 11',
+    apply_form = Button(string_window, text="Применить", width=9, command=new_apply_string, font='times 11',
                         relief=GROOVE, activebackground='light blue')
-    apply_form.place(relx=0.93, rely=0.95, anchor="c")
+    apply_form.place(relx=0.91, rely=0.96, anchor="c")
 
     mainloop()
 
 
 def save_global_text():
-    try:
-        temp_line = listbox.get(1.0, END)
-        text_dict = eval(temp_line)
-        finish_file = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
-        file = asksaveasfile(defaultextension=".json")
-        file.write(finish_file)
-    except Exception as err:
-        messagebox.showwarning('Ошибка при сохранении файла', 'str(%s)' % err)
+    global message
+    temp_line = listbox.get(1.0, END)
+    if not temp_line == '\n':
+        check = 0
+        try:
+            if temp_line is not '\n' or None:
+                text_dict = eval(temp_line)
+                finish_file = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
+                file = asksaveasfile(defaultextension=".json")
+                # r = open(file, 'w', encoding="windows-1251")
+                #file.write(finish_file)
+                file.write(message)
+                file.close()
+            else:
+                check = 1
+                raise Exception
+        except Exception as err:
+            if check == 0:
+                messagebox.showwarning('Ошибка при сохранении файла', 'str(%s)' % err)
+    else:
+        messagebox.showwarning('Error', 'Вы не создали шаблон ! \n')
 
 
 def send_printer():
     global port, finish
     temp_line = listbox.get(1.0, END)
-    text_dict = []
-    finish_view = {}
-    data_dict = []
-    text_dict = eval(temp_line)
-    new_form = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
-    core = 10001
-    message = '{"id": 107, "data": {"preview": false, "docPrintTemplate": %s}}' % new_form
-    try:
-        port = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        port.connect((str(ip_entry_socket), core))
-        port.send(message.encode())
-    except Exception as er:
-        messagebox.showwarning('Error', 'Ошибка при отправке на печать \n\n%s' % er)
-    finally:
-        port.close()
+    if not temp_line == '\n':
+        data = ''
+        text_dict = eval(temp_line)
+        last_form = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
+        core = 10001
+        try:
+            message_get_state = '{"id": 100}'
+            massage = '{"id": 107, "data": {"preview": false, "docPrintTemplate": %s}}' % last_form
+            port = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            port.connect((str(ip_entry_socket), core))
+            port.send(message_get_state.encode())
+            data_100 = port.recv(10000).decode()
+            port.send(massage.encode())
+            data = port.recv(10000).decode()
+            if data_100.find('"status":0') == -1:
+                raise Exception
+        except Exception as er:
+            messagebox.showwarning('Error', 'Ошибка при отправке на печать.\nВозможно не включен принтер\n'
+                                            '\nОтвет на запрос {"id": 100}:\n%s\n%s' % (er, data))
+        finally:
+            port.close()
+    else:
+        messagebox.showwarning('Error', 'Вы не создали шаблон ! \n')
+
+
+def get_view_json():
+    global new_form, finish, checkpoint, example_text, no_type_string, message, flag_add_string, flag_for_save_json
+
+    def exit_json_view():
+        textbox.delete(1.0, END)
+        json_window.destroy()
+
+    def save_json():
+        global message, flag_for_save_json
+        edit_dict = {}
+        edit_line = textbox.get(1.0, END)
+        edit_dict = eval(edit_line)
+        message = {}
+        message = json.dumps(edit_dict, sort_keys=False, indent=4, ensure_ascii=False)
+        for_data_edit_dict = edit_dict.get('data')
+        doc_print_for_data_edit_dict = for_data_edit_dict.get("docPrintTemplate")
+        new_json_edit = json.dumps(doc_print_for_data_edit_dict, sort_keys=False, indent=4, ensure_ascii=False)
+        listbox.delete(0.0, END)
+        listbox.insert(END, new_json_edit)
+        flag_for_save_json = 1
+        json_window.destroy()
+
+    temp_line = listbox.get(1.0, END)
+    if not temp_line == '\n':
+        text_dict = eval(temp_line)
+        new_form = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
+        if checkpoint == 1:
+            if flag_for_save_json == 0:
+                message = {"id": 107, "data": {"preview": "true", "docPrintTemplate": text_dict}}
+                data_dict = message.get('data')
+                size_example = len(no_type_string)
+                for item in range(size_example):
+                    data_dict.update({no_type_string[item]: example_text[item]})
+                message = json.dumps(message, sort_keys=False, indent=4, ensure_ascii=False)
+            elif flag_for_save_json == 1:
+                if flag_add_string == 1:
+                    message_dict = {}
+                    message_dict = ast.literal_eval(message)
+                    data_dict = message_dict.get('data')
+                    doc_print_for_data_dict = data_dict.get("docPrintTemplate")
+                    doc_print_for_data_dict.update(text_dict)
+                    size_example = len(no_type_string)
+                    for item in range(size_example):
+                        data_dict.update({no_type_string[item]: example_text[item]})
+                    message = json.dumps(message_dict, sort_keys=False, indent=4, ensure_ascii=False)
+                elif flag_add_string == 0:
+                    message = {"id": 107, "data": {"preview": "true", "docPrintTemplate": text_dict}}
+                    data_dict = message.get('data')
+                    size_example = len(no_type_string)
+                    for item in range(size_example):
+                        data_dict.update({no_type_string[item]: example_text[item]})
+                    message = json.dumps(message, sort_keys=False, indent=4, ensure_ascii=False)
+        else:
+            message = '{"id": 107, "data": {"preview": "true", "docPrintTemplate": %s}}' % new_form
+    else:
+        messagebox.showwarning('Ошибка.', 'Вы не создали шаблон.')
+
+    json_window = Toplevel()
+    json_window.title("Просмотр Json")
+    json_window.geometry("765x420")
+    textbox = Text(json_window, width=83, height=21, font=('Courier', 11), selectbackground='light blue')
+    textbox.place(x=5, y=10)
+    btn_save = Button(json_window, text='Сохранить', command=save_json, relief=GROOVE,
+                      activebackground='light blue')
+    btn_save.place(x=550, y=390)
+    btn_save.config(width=13)
+    btn_exit = Button(json_window, text='Закрыть', command=exit_json_view, relief=GROOVE,
+                      activebackground='light blue')
+    btn_exit.place(x=657, y=390)
+    btn_exit.config(width=13)
+
+    textbox.delete(1.0, END)
+    textbox.insert(END, message)
+
+    json_window.mainloop()
 
 
 root = Tk()
 root.title("Build Form")
-root.wm_geometry("%dx%d+%d+%d" % (1300, 650, 0, 0))
+root.wm_geometry("%dx%d+%d+%d" % (1355, 700, 0, 0))
 frame = ttk.Frame(root, padding=(7, 7, 11, 11))
-frame.grid(column=0, row=0, sticky=(N, S, E, W))
-ip_label = Label(root, text='IP для запроса:', width=12, height=1, font='times 11', relief=GROOVE)
-ip_label.place(x=7, y=35)
+frame.grid(column=0, row=0, sticky='news')
+ip_label = Label(frame, text='IP для запроса:', width=12, height=1, font='times 11', relief=GROOVE)
+ip_label.grid(column=10, row=1)
 ip_label.config(bg='#e7f236')
 ip_address = StringVar()
-ip_entry = Entry(root, textvariable=ip_address)
-ip_entry.place(x=112, y=37)
-btn_info = Button(frame, text="Создать шаблон", command=create_form,  relief=GROOVE, activebackground='light blue')
+ip_entry = Entry(frame, textvariable=ip_address)
+ip_entry.grid(column=11, row=1)
+btn_info = Button(frame, text="Создать шаблон", command=create_form, relief=GROOVE, activebackground='light blue')
 btn_info.grid(column=2, row=1)
 btn_info.config(width=13)
-btn_trade = Button(frame, text="Добавить строку", command=add_string,  relief=GROOVE, activebackground='light blue')
+btn_trade = Button(frame, text="Добавить строку", command=add_string, relief=GROOVE, activebackground='light blue')
 btn_trade.grid(column=5, row=1)
 btn_trade.config(width=13)
 btn_master = Button(frame, text='Выбор настроек', command=settings_change, relief=GROOVE, activebackground='light blue')
 btn_master.grid(column=6, row=1)
 btn_master.config(width=13)
-btn_close = Button(frame, command=select_close, text='Exit', relief=GROOVE,
+btn_close = Button(frame, command=select_close, text='Выход', relief=GROOVE,
                    activeforeground='white', activebackground='#b20101')
 btn_close.grid(column=9, row=1)
 btn_close.config(width=11)
-apply = Button(root, text="Apply", command=apply_global_text, activebackground='light blue', relief=GROOVE, fg="black",
-               font='times 11')
-apply.place(relx=0.05, rely=0.96, anchor="c")
-apply.config(width=12)
-save = Button(root, text="Save file", command=save_global_text, activebackground='light blue', relief=GROOVE,
+apply = Button(root, text="Сгенерировать шаблон", command=apply_global_text, activebackground='light blue',
+               relief=GROOVE, fg="black", font='times 11')
+apply.place(relx=0.07, rely=0.96, anchor="c")
+apply.config(width=19)
+view_json = Button(root, text="Просмотреть json", command=get_view_json, activebackground='light blue',
+                   relief=GROOVE, fg="black", font='times 11')
+view_json.place(relx=0.192, rely=0.96, anchor="c")
+view_json.config(width=19)
+save = Button(root, text="Сохранить шаблон", command=save_global_text, activebackground='light blue', relief=GROOVE,
               fg="black", font='times 11')
-save.place(relx=0.95, rely=0.96, anchor="c")
-save.config(width=12)
-printer = Button(root, text="Print", command=send_printer, activebackground='light blue', relief=GROOVE,
+save.place(relx=0.94, rely=0.96, anchor="c")
+save.config(width=15)
+printer = Button(root, text="Распечатать", command=send_printer, activebackground='light blue', relief=GROOVE,
                  fg="black", font='times 11')
-printer.place(relx=0.86, rely=0.96, anchor="c")
+printer.place(relx=0.85, rely=0.96, anchor="c")
 printer.config(width=12)
-label_paper_width = Label(frame, text="Бумага не выбрана", width=23, height=1, font='times 12', relief=GROOVE)
-label_paper_width.grid(column=10, row=1)
-label_paper_width.config(bg='#e84343')
-label_symbol_glob = Label(frame, text="Кол-во знаков не выбрано", width=23, height=1, font='times 12', relief=GROOVE)
-label_symbol_glob.grid(column=11, row=1)
-label_symbol_glob.config(bg='#e84343')
-listbox = Text(root, width=96, height=29, font=('Courier', 11), selectbackground='light blue')
+listbox = Text(root, width=87, height=33, font=('Courier', 11), selectbackground='light blue')
 listbox.place(x=5, y=65)
 edit_menu = Menu(listbox, tearoff=0)
 edit_menu.add_command(label="Cut", accelerator="Ctrl+X", command=lambda: listbox.event_generate('<<Cut>>'))
 edit_menu.add_command(label="Copy", accelerator="Ctrl+C", command=lambda: listbox.event_generate('<<Copy>>'))
 edit_menu.add_command(label="Paste", accelerator="Ctrl+V", command=lambda: listbox.event_generate('<<Paste>>'))
 listbox.bind("<Button-3>", lambda event: edit_menu.post(event.x_root, event.y_root))
-listbox2 = Listbox(root, width=45, height=28, font=('Courier', 11), selectbackground='BLUE')
-listbox2.place(x=880, y=64)
-
-
+listbox2 = Listbox(root, width=61, height=32, font=('Courier', 11), selectbackground='BLUE')
+listbox2.place(x=795, y=64)
 root.mainloop()

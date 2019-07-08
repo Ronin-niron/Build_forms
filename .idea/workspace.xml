@@ -4,6 +4,8 @@
     <list default="true" id="da2a54ba-cadd-45ba-9130-edae5c444427" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build_form.py" beforeDir="false" afterPath="$PROJECT_DIR$/build_form.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/venv/pip-selfcheck.json" beforeDir="false" afterPath="$PROJECT_DIR$/venv/pip-selfcheck.json" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -15,26 +17,24 @@
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/CuposPrintForms$server_socket.coverage" NAME="server_socket Coverage Results" MODIFIED="1559199468701" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/CuposPrintForms$test.coverage" NAME="test Coverage Results" MODIFIED="1557566827745" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/CuposPrintForms$build_form.coverage" NAME="build_form Coverage Results" MODIFIED="1559645359249" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/CuposPrintForms$build_form.coverage" NAME="build_form Coverage Results" MODIFIED="1562569846409" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="build_form.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="build_form.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/build_form.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="434">
-              <caret line="148" column="30" selection-start-line="148" selection-start-column="30" selection-end-line="148" selection-end-column="30" />
+            <state relative-caret-position="210">
+              <caret line="173" selection-start-line="173" selection-end-line="173" />
               <folding>
                 <element signature="e#10#21#0" expanded="true" />
-                <element signature="e#476#968#0" />
-                <element signature="e#994#5339#0" />
-                <element signature="e#6988#13313#0" />
-                <element signature="e#7090#9692#0" />
-                <element signature="e#17418#25924#0" />
-                <element signature="e#19344#22319#0" />
-                <element signature="e#22369#24362#0" />
-                <element signature="e#24412#25901#0" />
-                <element signature="e#26005#26180#0" />
+                <element signature="e#402#969#0" />
+                <element signature="e#995#4830#0" />
+                <element signature="e#7337#13708#0" />
+                <element signature="e#13733#37432#0" />
+                <element signature="e#37463#38299#0" />
+                <element signature="e#38326#39486#0" />
+                <element signature="e#39514#43146#0" />
               </folding>
             </state>
           </provider>
@@ -43,8 +43,17 @@
       <file leaf-file-name="test.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="697">
-              <caret line="41" selection-start-line="41" selection-end-line="41" />
+            <state>
+              <caret selection-end-line="53" selection-end-column="66" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="__init__.py" pinned="false" current-in-tab="true">
+        <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python37/Lib/tkinter/__init__.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="193">
+              <caret line="1704" selection-start-line="1704" selection-end-line="1704" />
             </state>
           </provider>
         </entry>
@@ -52,8 +61,8 @@
       <file leaf-file-name="Read_log.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../LOG_READER_EXE/Read_log_v04/Read_log.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2686">
-              <caret line="160" column="38" selection-start-line="160" selection-start-column="32" selection-end-line="160" selection-end-column="42" />
+            <state relative-caret-position="3026">
+              <caret line="180" column="16" selection-start-line="180" selection-start-column="16" selection-end-line="180" selection-end-column="59" />
             </state>
           </provider>
         </entry>
@@ -111,6 +120,7 @@
         <option value="$PROJECT_DIR$/TMP.txt" />
         <option value="$PROJECT_DIR$/Settings.txt" />
         <option value="$PROJECT_DIR$/server_socket.py" />
+        <option value="D:/Menu_Recovery/dorecovery.py" />
         <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/build_form.py" />
       </list>
@@ -125,7 +135,7 @@
   <component name="NodePackageJsonFileManager">
     <packageJsonPaths />
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds">
     <option name="x" value="1358" />
     <option name="y" value="-8" />
     <option name="width" value="1696" />
@@ -152,6 +162,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="D:/Menu_Recovery" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
   </component>
@@ -291,7 +302,14 @@
       <option name="project" value="LOCAL" />
       <updated>1559570045510</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="add type parameter&#10;correct def apply global text&#10;add def no_std_name">
+      <created>1559645862875</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1559645862875</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TodoView">
@@ -304,24 +322,22 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1358" y="-8" width="1696" height="1026" extended-state="6" />
-    <editor active="true" />
+    <frame x="1358" y="-8" width="1696" height="1026" extended-state="0" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32947975" />
       <window_info anchor="bottom" id="Event Log" order="11" side_tool="true" />
       <window_info anchor="bottom" id="Database Changes" order="8" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="9" weight="0.30057803" />
       <window_info anchor="bottom" id="Python Console" order="12" weight="0.32947975" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.17109826" />
-      <window_info anchor="bottom" id="Terminal" order="10" weight="0.26242775" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.13202934" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.15606937" />
+      <window_info anchor="bottom" id="Terminal" order="10" weight="0.22080925" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.069070905" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="4" />
       <window_info anchor="right" id="SciView" order="3" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Concurrent Activities Diagram" order="13" weight="0.32947975" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.37109828" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.27283236" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -329,6 +345,7 @@
       <window_info anchor="bottom" id="Find" order="1" weight="0.32947975" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Concurrent Activities Diagram" order="13" weight="0.32947975" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -344,7 +361,8 @@
     <MESSAGE value="delete button, add socket, rebuild add_entry_string, add_string(no work standart+no_std+std  (type))" />
     <MESSAGE value="remove def add,add_entry&#10;new def new_add" />
     <MESSAGE value="add try/except&#10;add button save,print&#10;new design&#10;no add no type parameter" />
-    <option name="LAST_COMMIT_MESSAGE" value="add try/except&#10;add button save,print&#10;new design&#10;no add no type parameter" />
+    <MESSAGE value="add type parameter&#10;correct def apply global text&#10;add def no_std_name" />
+    <option name="LAST_COMMIT_MESSAGE" value="add type parameter&#10;correct def apply global text&#10;add def no_std_name" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -356,26 +374,19 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/build_form.py</url>
-          <line>625</line>
-          <option name="timeStamp" value="116" />
+          <line>798</line>
+          <option name="timeStamp" value="174" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/build_form.py</url>
-          <line>722</line>
-          <option name="timeStamp" value="120" />
+          <line>119</line>
+          <option name="timeStamp" value="179" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="124" />
+      <option name="time" value="180" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/../Apteki_SKNO_install/Install_skno.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="8398">
-          <caret line="494" column="22" selection-start-line="494" selection-start-column="18" selection-end-line="494" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../Adm_git_ok/Admn_git.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1632">
@@ -403,15 +414,13 @@
           <caret line="216" column="37" selection-start-line="216" selection-start-column="37" selection-end-line="216" selection-end-column="37" />
           <folding>
             <element signature="e#10#21#0" expanded="true" />
-            <element signature="e#476#968#0" />
-            <element signature="e#994#5339#0" />
-            <element signature="e#6988#13313#0" />
-            <element signature="e#7090#9692#0" />
-            <element signature="e#17418#25924#0" />
-            <element signature="e#19344#22319#0" />
-            <element signature="e#22369#24362#0" />
-            <element signature="e#24412#25901#0" />
-            <element signature="e#26005#26180#0" />
+            <element signature="e#402#969#0" />
+            <element signature="e#995#4830#0" />
+            <element signature="e#7337#13708#0" />
+            <element signature="e#13733#37432#0" />
+            <element signature="e#37463#38299#0" />
+            <element signature="e#38326#39486#0" />
+            <element signature="e#39514#43146#0" />
           </folding>
         </state>
       </provider>
@@ -478,15 +487,13 @@
           <caret line="209" column="50" lean-forward="true" selection-start-line="209" selection-start-column="50" selection-end-line="209" selection-end-column="50" />
           <folding>
             <element signature="e#10#21#0" expanded="true" />
-            <element signature="e#476#968#0" />
-            <element signature="e#994#5339#0" />
-            <element signature="e#6988#13313#0" />
-            <element signature="e#7090#9692#0" />
-            <element signature="e#17418#25924#0" />
-            <element signature="e#19344#22319#0" />
-            <element signature="e#22369#24362#0" />
-            <element signature="e#24412#25901#0" />
-            <element signature="e#26005#26180#0" />
+            <element signature="e#402#969#0" />
+            <element signature="e#995#4830#0" />
+            <element signature="e#7337#13708#0" />
+            <element signature="e#13733#37432#0" />
+            <element signature="e#37463#38299#0" />
+            <element signature="e#38326#39486#0" />
+            <element signature="e#39514#43146#0" />
           </folding>
         </state>
       </provider>
@@ -542,15 +549,13 @@
           <caret line="180" column="23" selection-start-line="180" selection-start-column="23" selection-end-line="180" selection-end-column="23" />
           <folding>
             <element signature="e#10#21#0" expanded="true" />
-            <element signature="e#476#968#0" />
-            <element signature="e#994#5339#0" />
-            <element signature="e#6988#13313#0" />
-            <element signature="e#7090#9692#0" />
-            <element signature="e#17418#25924#0" />
-            <element signature="e#19344#22319#0" />
-            <element signature="e#22369#24362#0" />
-            <element signature="e#24412#25901#0" />
-            <element signature="e#26005#26180#0" />
+            <element signature="e#402#969#0" />
+            <element signature="e#995#4830#0" />
+            <element signature="e#7337#13708#0" />
+            <element signature="e#13733#37432#0" />
+            <element signature="e#37463#38299#0" />
+            <element signature="e#38326#39486#0" />
+            <element signature="e#39514#43146#0" />
           </folding>
         </state>
       </provider>
@@ -620,15 +625,13 @@
           <caret line="86" column="9" selection-start-line="86" selection-start-column="4" selection-end-line="86" selection-end-column="20" />
           <folding>
             <element signature="e#10#21#0" expanded="true" />
-            <element signature="e#476#968#0" />
-            <element signature="e#994#5339#0" />
-            <element signature="e#6988#13313#0" />
-            <element signature="e#7090#9692#0" />
-            <element signature="e#17418#25924#0" />
-            <element signature="e#19344#22319#0" />
-            <element signature="e#22369#24362#0" />
-            <element signature="e#24412#25901#0" />
-            <element signature="e#26005#26180#0" />
+            <element signature="e#402#969#0" />
+            <element signature="e#995#4830#0" />
+            <element signature="e#7337#13708#0" />
+            <element signature="e#13733#37432#0" />
+            <element signature="e#37463#38299#0" />
+            <element signature="e#38326#39486#0" />
+            <element signature="e#39514#43146#0" />
           </folding>
         </state>
       </provider>
@@ -688,15 +691,13 @@
           <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
           <folding>
             <element signature="e#10#21#0" expanded="true" />
-            <element signature="e#476#968#0" />
-            <element signature="e#994#5339#0" />
-            <element signature="e#6988#13313#0" />
-            <element signature="e#7090#9692#0" />
-            <element signature="e#17418#25924#0" />
-            <element signature="e#19344#22319#0" />
-            <element signature="e#22369#24362#0" />
-            <element signature="e#24412#25901#0" />
-            <element signature="e#26005#26180#0" />
+            <element signature="e#402#969#0" />
+            <element signature="e#995#4830#0" />
+            <element signature="e#7337#13708#0" />
+            <element signature="e#13733#37432#0" />
+            <element signature="e#37463#38299#0" />
+            <element signature="e#38326#39486#0" />
+            <element signature="e#39514#43146#0" />
           </folding>
         </state>
       </provider>
@@ -749,15 +750,13 @@
           <caret line="37" column="49" selection-start-line="37" selection-start-column="49" selection-end-line="37" selection-end-column="49" />
           <folding>
             <element signature="e#10#21#0" expanded="true" />
-            <element signature="e#476#968#0" />
-            <element signature="e#994#5339#0" />
-            <element signature="e#6988#13313#0" />
-            <element signature="e#7090#9692#0" />
-            <element signature="e#17418#25924#0" />
-            <element signature="e#19344#22319#0" />
-            <element signature="e#22369#24362#0" />
-            <element signature="e#24412#25901#0" />
-            <element signature="e#26005#26180#0" />
+            <element signature="e#402#969#0" />
+            <element signature="e#995#4830#0" />
+            <element signature="e#7337#13708#0" />
+            <element signature="e#13733#37432#0" />
+            <element signature="e#37463#38299#0" />
+            <element signature="e#38326#39486#0" />
+            <element signature="e#39514#43146#0" />
           </folding>
         </state>
       </provider>
@@ -819,9 +818,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Downloads/build_form (2).py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
+    <entry file="file://$USER_HOME$/Downloads/build_form (2).py" />
     <entry file="file://$PROJECT_DIR$/Settings.txt">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -856,44 +853,43 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../LOG_READER_EXE/Read_log_v04/Read_log.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2686">
-          <caret line="160" column="38" selection-start-line="160" selection-start-column="32" selection-end-line="160" selection-end-column="42" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/server_socket.py" />
+    <entry file="file://D:/Menu_Recovery/dorecovery.py" />
     <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="697">
-          <caret line="41" selection-start-line="41" selection-end-line="41" />
+        <state>
+          <caret selection-end-line="53" selection-end-column="66" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python37/Lib/tkinter/__init__.py">
+    <entry file="file://$PROJECT_DIR$/../LOG_READER_EXE/Read_log_v04/Read_log.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="343">
-          <caret line="1699" selection-start-line="1699" selection-end-line="1699" />
+        <state relative-caret-position="3026">
+          <caret line="180" column="16" selection-start-line="180" selection-start-column="16" selection-end-line="180" selection-end-column="59" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/build_form.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="434">
-          <caret line="148" column="30" selection-start-line="148" selection-start-column="30" selection-end-line="148" selection-end-column="30" />
+        <state relative-caret-position="210">
+          <caret line="173" selection-start-line="173" selection-end-line="173" />
           <folding>
             <element signature="e#10#21#0" expanded="true" />
-            <element signature="e#476#968#0" />
-            <element signature="e#994#5339#0" />
-            <element signature="e#6988#13313#0" />
-            <element signature="e#7090#9692#0" />
-            <element signature="e#17418#25924#0" />
-            <element signature="e#19344#22319#0" />
-            <element signature="e#22369#24362#0" />
-            <element signature="e#24412#25901#0" />
-            <element signature="e#26005#26180#0" />
+            <element signature="e#402#969#0" />
+            <element signature="e#995#4830#0" />
+            <element signature="e#7337#13708#0" />
+            <element signature="e#13733#37432#0" />
+            <element signature="e#37463#38299#0" />
+            <element signature="e#38326#39486#0" />
+            <element signature="e#39514#43146#0" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python37/Lib/tkinter/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="193">
+          <caret line="1704" selection-start-line="1704" selection-end-line="1704" />
         </state>
       </provider>
     </entry>
