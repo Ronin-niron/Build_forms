@@ -72,7 +72,9 @@ def create_form():
             lines_dict = []
             select = locale_select.get()
             locale = value_locate.get(select)
-            json_settings = {"columns": result_signs, "paperWidth": result_paper, "locale": locale, "lines": lines_dict}
+            version = version_symbol.get()
+            json_settings = {"columns": result_signs, "paperWidth": result_paper, "locale": locale,
+                             "version": version, "lines": lines_dict}
             json_insert = json.dumps(json_settings, sort_keys=False, indent=4, ensure_ascii=False)
             listbox.insert(1.0, json_insert)
             tmp_line = listbox.get(1.0, END)
@@ -83,12 +85,10 @@ def create_form():
 
     message_paper = IntVar()
     mess_symbol = IntVar()
+    version_symbol = IntVar()
     create = Toplevel()
     create.title("Выбрать параметры шаблона")
     create.geometry("360x200")
-    lab = Label(create, text="", width=50,
-                height=10, font=('times', 12))
-    lab.place(relx=.5, rely=.3, anchor="n")
     paper_entry = Entry(create, textvariable=message_paper)
     paper_entry.grid(column=2, row=1)
     paper_entry.config(width=28)
@@ -101,6 +101,12 @@ def create_form():
     symbol_entry = Entry(create, textvariable=mess_symbol)
     symbol_entry.grid(column=2, row=2)
     symbol_entry.config(width=28)
+    label_version = Label(create, text="Версия", width=22, height=1, font='times 11', relief=GROOVE)
+    label_version.grid(column=1, row=3)
+    label_version.config(bg='#e84343')
+    version_entry = Entry(create, textvariable=version_symbol)
+    version_entry.grid(column=2, row=3)
+    version_entry.config(width=28)
     btn_cancel = Button(create, text="Закрыть", command=exit_setting, width=8, height=1, font='times 11',
                         relief=GROOVE, activebackground='light blue')
     btn_cancel.place(relx=0.85, rely=0.9, anchor="c")
@@ -110,13 +116,13 @@ def create_form():
     locale_select = StringVar(root)
     locale_select.set(list_locale.get(0))
     locale_menu = OptionMenu(create, locale_select, *list_locale.values())
-    locale_menu.grid(column=1, row=3)
+    locale_menu.grid(column=1, row=4)
     locale_menu.config(width=24, height=1, relief=GROOVE, activebackground='light blue')
     create.mainloop()
 
 
 def apply_global_text():
-    global new_form, ip_address, ip_entry_socket, finish, checkpoint, example_text,\
+    global new_form, ip_address, ip_entry_socket, finish, checkpoint, example_text, \
         no_type_string, message, flag_for_save_json
     ip_entry_socket = ip_address.get()
     temp_line = listbox.get(1.0, END)
@@ -749,7 +755,7 @@ def save_global_text():
 
 
 def send_printer():
-    global port, finish
+    global port, finish, data_100
     temp_line = listbox.get(1.0, END)
     if not temp_line == '\n':
         if temp_line.find("null"):
@@ -834,27 +840,98 @@ def get_view_json():
                     message = json.dumps(message, sort_keys=False, indent=4, ensure_ascii=False)
         else:
             message = '{"id": 107, "data": {"preview": "true", "docPrintTemplate": %s}}' % new_form
+        json_window = Toplevel()
+        json_window.title("Просмотр Json")
+        json_window.geometry("765x420")
+        textbox = Text(json_window, width=83, height=21, font=('Courier', 11), selectbackground='light blue')
+        textbox.place(x=5, y=10)
+        btn_save = Button(json_window, text='Сохранить', command=save_json, relief=GROOVE,
+                          activebackground='light blue')
+        btn_save.place(x=550, y=390)
+        btn_save.config(width=13)
+        btn_exit = Button(json_window, text='Закрыть', command=exit_json_view, relief=GROOVE,
+                          activebackground='light blue')
+        btn_exit.place(x=657, y=390)
+        btn_exit.config(width=13)
+        textbox.delete(1.0, END)
+        textbox.insert(END, message)
+        json_window.mainloop()
     else:
         messagebox.showwarning('Ошибка.', 'Вы не создали шаблон.')
 
-    json_window = Toplevel()
-    json_window.title("Просмотр Json")
-    json_window.geometry("765x420")
-    textbox = Text(json_window, width=83, height=21, font=('Courier', 11), selectbackground='light blue')
-    textbox.place(x=5, y=10)
-    btn_save = Button(json_window, text='Сохранить', command=save_json, relief=GROOVE,
-                      activebackground='light blue')
-    btn_save.place(x=550, y=390)
-    btn_save.config(width=13)
-    btn_exit = Button(json_window, text='Закрыть', command=exit_json_view, relief=GROOVE,
-                      activebackground='light blue')
-    btn_exit.place(x=657, y=390)
-    btn_exit.config(width=13)
 
-    textbox.delete(1.0, END)
-    textbox.insert(END, message)
+def save_text_for_db():
+    global listbox, message
 
-    json_window.mainloop()
+    def exit_setting():
+        try:
+            save_db_window.destroy()
+        except Exception as err:
+            messagebox.showwarning('Ошибка при закрытии программы', 'str(%s)' % err)
+
+    def save_parameters():
+        global message
+        try:
+            db_json = {"doc_type": doc_type_entry.get(), "index_number": index_entry.get(), "template": message,
+                       "example": example_text_for_template, "description": description_entry.get()}
+            new_json = json.dumps(db_json, sort_keys=False, indent=4, ensure_ascii=False, skipkeys=True)
+            file = asksaveasfile(defaultextension=".json")
+            if file:
+                file.write(new_json)
+                file.close()
+        except Exception as err:
+            messagebox.showwarning('Ошибка при сохранении файла', 'str(%s)' % err)
+            save_db_window.destroy()
+
+    try:
+        text = listbox.get(1.0, END)
+        if text is "\n" or '':
+            messagebox.showwarning('Ошибка при добавлении параметра.',
+                                   'Возможно не создан шаблон. Либо не сгенерирован.')
+        else:
+            save_db_window = Toplevel()
+            save_db_window.title("Выбрать параметры шаблона для БД")
+            save_db_window.geometry("420x200")
+            doc_type_entry = IntVar()
+            index_entry = IntVar()
+            example_text_for_template = str("{\"id\":107, \"data\":{\n\"preview\":true,\n\"cashierId\":\"Бубыкин В.Б."
+                                            "\",\n\"currCode\":\"BYN\",\n\"docNum\":48281002,\n\n\"items\":[\n\t"
+                                            "{\"name\":\"Товар 1\", \"codeType\":1, \"code\":\"12345678\","
+                                            " \"qty\":2000, \"cost\":370, \"cost2\":400, \"taxes\":[\"в т.ч."
+                                            " НДС по ставке 20%: 0.62\"]},\n\t{\"name\":\"Товар 2\","
+                                            " \"codeType\":0, \"code\":\"\", \"qty\":33,\"cost\":100,"
+                                            " \"cost2\":100}\n]\n}}")
+            description_entry = StringVar()
+            doc_type = Entry(save_db_window, textvariable=doc_type_entry)
+            doc_type.grid(column=2, row=1)
+            doc_type.config(width=28)
+            label_doc_type = Label(save_db_window, text="Введите тип документа(doc_type(int))", width=28, height=1,
+                                   font='times 11', relief=GROOVE)
+            label_doc_type.grid(column=1, row=1)
+            label_doc_type.config(bg='#e84343')
+            label_description = Label(save_db_window, text="Введите description(int)", width=28, height=1,
+                                      font='times 11', relief=GROOVE)
+            label_description.grid(column=1, row=2)
+            label_description.config(bg='#e84343')
+            description = Entry(save_db_window, textvariable=description_entry)
+            description.grid(column=2, row=3)
+            description.config(width=28)
+            index = Entry(save_db_window, textvariable=index_entry)
+            index.grid(column=2, row=2)
+            index.config(width=28)
+            label_index = Label(save_db_window, text="Введите индекс(index_number(str))", width=28,
+                                height=1, font='times 11', relief=GROOVE)
+            label_index.grid(column=1, row=3)
+            label_index.config(bg='#e84343')
+            btn_cancel = Button(save_db_window, text="Закрыть", command=exit_setting, width=8, height=1,
+                                font='times 11', relief=GROOVE, activebackground='light blue')
+            btn_cancel.place(relx=0.85, rely=0.9, anchor="c")
+            apply_form = Button(save_db_window, text="Сохранить", width=9, height=1, command=save_parameters,
+                                font='times 11', relief=GROOVE, activebackground='light blue')
+            apply_form.place(relx=0.6, rely=0.9, anchor="c")
+            save_db_window.mainloop()
+    except Exception as err:
+        messagebox.showwarning('Ошибка при закрытии программы', 'str(%s)' % err)
 
 
 root = Tk()
@@ -893,9 +970,13 @@ save = Button(root, text="Сохранить шаблон", command=save_global_
               fg="black", font='times 11')
 save.place(relx=0.94, rely=0.96, anchor="c")
 save.config(width=15)
+save_db = Button(root, text="Сохранить для БД", command=save_text_for_db,
+                 activebackground='light blue', relief=GROOVE, fg="black", font='times 11')
+save_db.place(relx=0.84, rely=0.96, anchor="c")
+save_db.config(width=15)
 printer = Button(root, text="Распечатать", command=send_printer, activebackground='light blue', relief=GROOVE,
                  fg="black", font='times 11')
-printer.place(relx=0.85, rely=0.96, anchor="c")
+printer.place(relx=0.75, rely=0.96, anchor="c")
 printer.config(width=12)
 listbox = Text(root, width=87, height=33, font=('Courier', 11), selectbackground='light blue')
 listbox.place(x=5, y=65)
