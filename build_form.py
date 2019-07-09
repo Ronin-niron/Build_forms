@@ -861,7 +861,7 @@ def get_view_json():
 
 
 def save_text_for_db():
-    global listbox, message
+    global listbox
 
     def exit_setting():
         try:
@@ -870,16 +870,24 @@ def save_text_for_db():
             messagebox.showwarning('Ошибка при закрытии программы', 'str(%s)' % err)
 
     def save_parameters():
-        global message
+        global listbox
         try:
-            db_json = {"doc_type": doc_type_entry.get(), "index_number": index_entry.get(),
-                       "version": version_entry.get(), "template": message,
-                       "example": example_text_for_template, "description": description_entry.get()}
-            new_json = json.dumps(db_json, sort_keys=False, indent=4, ensure_ascii=False, skipkeys=True)
-            file = asksaveasfile(defaultextension=".json")
-            if file:
-                file.write(new_json)
-                file.close()
+            temp_line = listbox.get(1.0, END)
+            if not temp_line == '\n':
+                if temp_line is not '\n' or None:
+                    if temp_line.find("null"):
+                        temp_line = re.sub("null", "None", temp_line)
+                    text_dict = eval(temp_line)
+                    finish_file = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
+                    db_json = {"doc_type": doc_type_entry.get(), "index_number": index_entry.get(),
+                               "version": version_entry.get(), "template": finish_file,
+                               "example": example_text_for_template, "description": description_entry.get()}
+                    new_json = json.dumps(db_json, sort_keys=False, indent=4, ensure_ascii=False, skipkeys=True)
+                    file = asksaveasfile(defaultextension=".json")
+                    if file:
+                        file.write(new_json)
+                        file.close()
+                    save_db_window.destroy()
         except Exception as err:
             messagebox.showwarning('Ошибка при сохранении файла', 'str(%s)' % err)
             save_db_window.destroy()
@@ -996,4 +1004,3 @@ listbox.bind("<Button-3>", lambda event: edit_menu.post(event.x_root, event.y_ro
 listbox2 = Listbox(root, width=61, height=32, font=('Courier', 11), selectbackground='BLUE')
 listbox2.place(x=795, y=64)
 root.mainloop()
-
