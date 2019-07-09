@@ -872,7 +872,8 @@ def save_text_for_db():
     def save_parameters():
         global message
         try:
-            db_json = {"doc_type": doc_type_entry.get(), "index_number": index_entry.get(), "template": message,
+            db_json = {"doc_type": doc_type_entry.get(), "index_number": index_entry.get(),
+                       "version": version_entry.get(), "template": message,
                        "example": example_text_for_template, "description": description_entry.get()}
             new_json = json.dumps(db_json, sort_keys=False, indent=4, ensure_ascii=False, skipkeys=True)
             file = asksaveasfile(defaultextension=".json")
@@ -894,6 +895,7 @@ def save_text_for_db():
             save_db_window.geometry("420x200")
             doc_type_entry = IntVar()
             index_entry = IntVar()
+            version_symbol = IntVar()
             example_text_for_template = str("{\"id\":107, \"data\":{\n\"preview\":true,\n\"cashierId\":\"Бубыкин В.Б."
                                             "\",\n\"currCode\":\"BYN\",\n\"docNum\":48281002,\n\n\"items\":[\n\t"
                                             "{\"name\":\"Товар 1\", \"codeType\":1, \"code\":\"12345678\","
@@ -905,13 +907,13 @@ def save_text_for_db():
             doc_type = Entry(save_db_window, textvariable=doc_type_entry)
             doc_type.grid(column=2, row=1)
             doc_type.config(width=28)
-            label_doc_type = Label(save_db_window, text="Введите тип документа(doc_type(int))", width=28, height=1,
+            label_doc_type = Label(save_db_window, text="Введите тип документа(doc_type(int))", width=30, height=1,
                                    font='times 11', relief=GROOVE)
             label_doc_type.grid(column=1, row=1)
             label_doc_type.config(bg='#e84343')
-            label_description = Label(save_db_window, text="Введите description(int)", width=28, height=1,
+            label_description = Label(save_db_window, text="Введите description(str)", width=30, height=1,
                                       font='times 11', relief=GROOVE)
-            label_description.grid(column=1, row=2)
+            label_description.grid(column=1, row=3)
             label_description.config(bg='#e84343')
             description = Entry(save_db_window, textvariable=description_entry)
             description.grid(column=2, row=3)
@@ -919,10 +921,16 @@ def save_text_for_db():
             index = Entry(save_db_window, textvariable=index_entry)
             index.grid(column=2, row=2)
             index.config(width=28)
-            label_index = Label(save_db_window, text="Введите индекс(index_number(str))", width=28,
+            label_index = Label(save_db_window, text="Введите индекс(index_number(int))", width=30,
                                 height=1, font='times 11', relief=GROOVE)
-            label_index.grid(column=1, row=3)
+            label_index.grid(column=1, row=2)
             label_index.config(bg='#e84343')
+            label_version = Label(save_db_window, text="Версия", width=30, height=1, font='times 11', relief=GROOVE)
+            label_version.grid(column=1, row=4)
+            label_version.config(bg='#e84343')
+            version_entry = Entry(save_db_window, textvariable=version_symbol)
+            version_entry.grid(column=2, row=4)
+            version_entry.config(width=28)
             btn_cancel = Button(save_db_window, text="Закрыть", command=exit_setting, width=8, height=1,
                                 font='times 11', relief=GROOVE, activebackground='light blue')
             btn_cancel.place(relx=0.85, rely=0.9, anchor="c")
@@ -988,3 +996,4 @@ listbox.bind("<Button-3>", lambda event: edit_menu.post(event.x_root, event.y_ro
 listbox2 = Listbox(root, width=61, height=32, font=('Courier', 11), selectbackground='BLUE')
 listbox2.place(x=795, y=64)
 root.mainloop()
+
