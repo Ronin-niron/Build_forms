@@ -85,7 +85,7 @@ def create_form():
 
     message_paper = IntVar()
     mess_symbol = IntVar()
-    version_symbol = IntVar()
+    version_symbol = StringVar()
     create = Toplevel()
     create.title("Выбрать параметры шаблона")
     create.geometry("360x200")
@@ -771,10 +771,10 @@ def send_printer():
             port.connect((str(ip_entry_socket), core))
             port.send(message_get_state.encode())
             data_100 = port.recv(10000).decode()
-            port.send(massage.encode())
-            data = port.recv(10000).decode()
             if re.search(data_100, '"status":2'):
                 raise Exception
+            port.send(massage.encode())
+            data = port.recv(10000).decode()
         except Exception as er:
             messagebox.showwarning('Error', 'Ошибка при отправке на печать.\nВозможно не включен принтер\n'
                                             '\nОтвет на запрос:\n%s\n%s\n%s' % (er, data, data_100))
@@ -880,8 +880,8 @@ def save_text_for_db():
                     text_dict = eval(temp_line)
                     finish_file = json.dumps(text_dict, sort_keys=False, indent=4, ensure_ascii=False)
                     db_json = {"doc_type": doc_type_entry.get(), "index_number": index_entry.get(),
-                               "version": version_entry.get(), "template": finish_file,
-                               "example": example_text_for_template, "description": description_entry.get()}
+                               "template": finish_file, "example": example_text_for_template,
+                               "description": description_entry.get()}
                     new_json = json.dumps(db_json, sort_keys=False, indent=4, ensure_ascii=False, skipkeys=True)
                     file = asksaveasfile(defaultextension=".json")
                     if file:
@@ -933,12 +933,6 @@ def save_text_for_db():
                                 height=1, font='times 11', relief=GROOVE)
             label_index.grid(column=1, row=2)
             label_index.config(bg='#e84343')
-            label_version = Label(save_db_window, text="Версия", width=30, height=1, font='times 11', relief=GROOVE)
-            label_version.grid(column=1, row=4)
-            label_version.config(bg='#e84343')
-            version_entry = Entry(save_db_window, textvariable=version_symbol)
-            version_entry.grid(column=2, row=4)
-            version_entry.config(width=28)
             btn_cancel = Button(save_db_window, text="Закрыть", command=exit_setting, width=8, height=1,
                                 font='times 11', relief=GROOVE, activebackground='light blue')
             btn_cancel.place(relx=0.85, rely=0.9, anchor="c")
